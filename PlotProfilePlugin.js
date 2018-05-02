@@ -12,16 +12,14 @@ PlotProfile.pp = []
 PlotProfile.ppid = []
 PlotProfile.ppcolors = []
 PlotProfile.POSSIBLE_COLORS = ["#FF0000","#00FF00","#0000FF","#FFFF00","#FF00FF","#00FFFF","#FF8000","#00FF80","#8000FF"]
-PlotProfile.colorFree = [true,true,true,true,true,true,true,true,true,true]
 
 PlotProfile.init = function(){
     PlotProfile.pp = []
     PlotProfile.ppid = []
     PlotProfile.ppcolors = []
-    PlotProfile.colorFree = [true,true,true,true,true,true,true,true,true,true]
     var regions = JS9.GetRegions("all")
     var i
-    if(regions==null){
+    if(regions==null /*|| regions.length == 0*/){
         $(this.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create, click, move, or resize a line region to see plot profile<br>");
     }else{
         for(i=0;i<regions.length;i++){
@@ -34,11 +32,15 @@ PlotProfile.init = function(){
 
 PlotProfile.newRegion = function(xreg){
     var cnb = 0
+    var rnb = 0
     var color = undefined
-    while(cnb<PlotProfile.colorFree.length && color==undefined){
-        if(PlotProfile.colorFree[cnb]){
-            color = PlotProfile.POSSIBLE_COLORS[cnb]
-            PlotProfile.colorFree[cnb] = false
+    var regions = JS9.GetRegions("all")
+    while(cnb<PlotProfile.POSSIBLE_COLORS.length && color==undefined){
+        color = PlotProfile.POSSIBLE_COLORS[cnb]
+        for(rnb = 0;rnb<regions.length;rnb++){
+            if(regions[rnb].shape=="line" && regions[rnb].id != xreg.id && regions[rnb].color==color){
+                color = undefined
+            }
         }
         cnb++
     }
@@ -52,17 +54,10 @@ PlotProfile.newRegion = function(xreg){
     return res-1
 }
 
-PlotProfile.deleteRegion = function(sn, xreg){
+PlotProfile.deleteRegion = function(sn){
     PlotProfile.pp.splice(sn,1)
     PlotProfile.ppid.splice(sn,1)
     PlotProfile.ppcolors.splice(sn,1)
-    var cnb = 0
-    while(cnb<PlotProfile.POSSIBLE_COLORS.length){
-        if(PlotProfile.POSSIBLE_COLORS[cnb]==xreg.color){
-            PlotProfile.colorFree[cnb] = true
-        }
-        cnb++
-    }
 }
 
 PlotProfile.ppFromRegion = function(im, xreg){
@@ -94,7 +89,6 @@ PlotProfile.regionChange2 = function(im, xreg){
     if (xreg.shape!="line"){
         return;
     }
-    //
     var mode = xreg.mode
     var sn = -1
     if(mode=="select"){
@@ -112,7 +106,7 @@ PlotProfile.regionChange2 = function(im, xreg){
         sn = PlotProfile.newRegion(xreg)
     }
     if(mode=="remove" && sn!=-1){
-        PlotProfile.deleteRegion(sn, xreg)
+        PlotProfile.deleteRegion(sn)
     }
     if(mode=="update"){
         PlotProfile.pp[sn] = PlotProfile.ppFromRegion(im, xreg)
