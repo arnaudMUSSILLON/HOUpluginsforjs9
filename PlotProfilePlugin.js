@@ -13,19 +13,21 @@ PlotProfile.ppid = [];
 PlotProfile.ppcolors = [];
 PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];
 PlotProfile.mainRegion = 0;
+PlotProfile.roundRegion = -1
 
 PlotProfile.init = function(){
     PlotProfile.pp = [];
     PlotProfile.ppid = [];
     PlotProfile.ppcolors = [];
     PlotProfile.mainRegion = 0;
+    PlotProfile.roundRegion = -1
     
     var regions = JS9.GetRegions("all"), i;
     if(regions===null || regions.length===0){
         $(this.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create, click, move, or resize a line region to see plot profile<br>");
     } else {
         for(i=0;i<regions.length;i++){
-            if (regions[i].shape==="line") {
+            if(regions[i].shape==="line"){
                 PlotProfile.newRegion(regions[i]);
             }
         }
@@ -85,9 +87,9 @@ PlotProfile.ppFromRegion = function(im, xreg){
     return pxValues;
 };
 
-PlotProfile.regionChange2 = function(im, xreg){
+PlotProfile.regionChange = function(im, xreg){
     //check region is a line
-    if (xreg.shape!="line"){
+    if(xreg.shape!=="line"){
         return;
     }
     //find region location in tables
@@ -126,6 +128,10 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         var mouseX = e.pageX - plot.offset().left;
         var x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
         if(PlotProfile.mainRegion<0 || x_<0 || x_>=PlotProfile.pp[PlotProfile.mainRegion].length){
+            if(PlotProfile.roundRegion!==-1){
+                JS9.RemoveRegions(PlotProfile.roundRegion);
+                PlotProfile.roundRegion = -1;
+            }
             return;
         }
         var y_ = PlotProfile.pp[PlotProfile.mainRegion][x_][1];
@@ -140,9 +146,27 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         ctx.stroke();
         ctx.font = "10px Arial";
         ctx.fillText("x:"+x_+" y:"+y_, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
+        var reg = JS9.GetRegions(PlotProfile.ppid[PlotProfile.mainRegion])[0];
+        var x1 = reg.pts[0].x;
+        var y1 = reg.pts[0].y;
+        var x2 = reg.pts[1].x;
+        var y2 = reg.pts[1].y;
+        var angle = PlotProfile.calculateAngle(x1,y1,x2,y2);
+        var px = x1+x_*Math.cos(angle);
+        var py = y1+x_*Math.sin(angle);
+        if(PlotProfile.roundRegion===-1){
+            PlotProfile.roundRegion = JS9.AddRegions("circle", {shape:"circle", x:px, y:py,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
+        }else{
+            //console.log(PlotProfile.roundRegion);
+            JS9.ChangeRegions(PlotProfile.roundRegion,{x:px, y:py});
+        }
     });
     eventHolder.mouseout(function (){
         plot.draw();
+        if(PlotProfile.roundRegion!==-1){
+            JS9.RemoveRegions(PlotProfile.roundRegion);
+            PlotProfile.roundRegion = -1;
+        }
     });
 };
 
@@ -171,7 +195,7 @@ PlotProfile.calculateAngle = function(x1,y1,x2,y2){
 JS9.RegisterPlugin(PlotProfile.CLASS, PlotProfile.NAME, PlotProfile.init,
             {menu:"analysis",
             menuItem: "Plot Profile",
-            onregionschange: PlotProfile.regionChange2,
+            onregionschange: PlotProfile.regionChange,
             winTitle: "Plot Profile",
             winResize: true,
             winDims: [PlotProfile.WIDTH, PlotProfile.HEIGHT]});
