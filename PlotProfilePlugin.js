@@ -14,25 +14,48 @@ PlotProfile.ppcolors = [];
 PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];
 PlotProfile.mainRegion = 0;
 PlotProfile.roundRegion = -1
+PlotProfile.initLock = false
 
 PlotProfile.init = function(){
+    PlotProfile.addAllRegions(this.div);
+    PlotProfile.initLock = true;
+};
+
+PlotProfile.onDisplay = function (){
+    if(!PlotProfile.initLock){
+        PlotProfile.addAllRegions(this.div);
+    }
+    PlotProfile.initLock = false
+};
+
+PlotProfile.addAllRegions = function(div){
     PlotProfile.pp = [];
     PlotProfile.ppid = [];
     PlotProfile.ppcolors = [];
     PlotProfile.mainRegion = 0;
-    PlotProfile.roundRegion = -1
+    PlotProfile.roundRegion = -1;
+    var noLineRegion = true;
     
     var regions = JS9.GetRegions("all"), i;
     if(regions===null || regions.length===0){
-        $(this.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create, click, move, or resize a line region to see plot profile<br>");
-    } else {
-        for(i=0;i<regions.length;i++){
-            if(regions[i].shape==="line"){
-                PlotProfile.newRegion(regions[i]);
-            }
+        PlotProfile.printInstructionText(div)
+        return;
+    }
+    for(i=0;i<regions.length;i++){
+        if(regions[i].shape==="line"){
+            noLineRegion = false
+            PlotProfile.newRegion(regions[i]);
         }
     }
+    if(noLineRegion){
+        PlotProfile.printInstructionText(div);
+    }
 };
+
+PlotProfile.printInstructionText = function(div){
+    $(div).empty();
+    $(div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
+}
 
 PlotProfile.newRegion = function(xreg){
     var cnb = 0, rnb = 0, color;
@@ -66,7 +89,7 @@ PlotProfile.deleteRegion = function(sn){
 PlotProfile.ppFromRegion = function(im, xreg){
     //check region is a line
     if(xreg.shape!=="line"){
-        return [];
+        return;
     }
     var x1 = xreg.pts[0].x;
     var y1 = xreg.pts[0].y;
@@ -118,7 +141,12 @@ PlotProfile.regionChange = function(im, xreg){
         PlotProfile.pp[sn] = PlotProfile.ppFromRegion(im, xreg);
         PlotProfile.ppcolors[sn] = xreg.color;
     }
-    $.plot(this.div, PlotProfile.pp, { zoomStack: true, selection: { mode: "xy" }, colors: PlotProfile.ppcolors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
+    if (PlotProfile.pp.length===0){
+        $(this.div).empty();
+        $(this.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
+    }else{
+        $.plot(this.div, PlotProfile.pp, { zoomStack: true, selection: { mode: "xy" }, colors: PlotProfile.ppcolors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
+    }
     
 };
 
@@ -157,7 +185,6 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         if(PlotProfile.roundRegion===-1){
             PlotProfile.roundRegion = JS9.AddRegions("circle", {shape:"circle", x:px, y:py,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
         }else{
-            //console.log(PlotProfile.roundRegion);
             JS9.ChangeRegions(PlotProfile.roundRegion,{x:px, y:py});
         }
     });
@@ -196,6 +223,7 @@ JS9.RegisterPlugin(PlotProfile.CLASS, PlotProfile.NAME, PlotProfile.init,
             {menu:"analysis",
             menuItem: "Plot Profile",
             onregionschange: PlotProfile.regionChange,
+            onplugindisplay: PlotProfile.onDisplay,
             winTitle: "Plot Profile",
             winResize: true,
             winDims: [PlotProfile.WIDTH, PlotProfile.HEIGHT]});
