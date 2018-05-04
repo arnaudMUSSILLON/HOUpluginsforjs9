@@ -1,26 +1,29 @@
 /*global $, JS9 */
 
 var PlotProfile;
-// create our namespace, and specify some meta-information and params
+// create namespace, and specify some meta-information and params
 PlotProfile = {};
 PlotProfile.CLASS = "PlotProfile";
 PlotProfile.NAME = "plpr";
 PlotProfile.WIDTH =  400;
 PlotProfile.HEIGHT = 200;
 
-PlotProfile.pp = [];
-PlotProfile.ppid = [];
-PlotProfile.ppcolors = [];
-PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];
-PlotProfile.mainRegion = 0;
-PlotProfile.roundRegion = -1
-PlotProfile.initLock = false
+//Init memory used by plugin
+PlotProfile.pp = [];//List of pixel values under lines regions
+PlotProfile.ppid = [];//List of lines regions id
+PlotProfile.ppcolors = [];//List of lines regions colors
+PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];//List of somes colors 
+PlotProfile.mainRegion = 0;//Position in the list of last region to be selected, created or modified
+PlotProfile.roundRegion = -1;//Id of the circle region displayed when mouse is on plot canvas
+PlotProfile.initLock = false;//Lock to avoid double execution of initialisations function in specific conditions
 
+//Initialisation function of the plugin
 PlotProfile.init = function(){
     PlotProfile.addAllRegions(this.div);
     PlotProfile.initLock = true;
 };
 
+//Function to call each time plugin window is open
 PlotProfile.onDisplay = function (){
     if(!PlotProfile.initLock){
         PlotProfile.addAllRegions(this.div);
@@ -28,6 +31,8 @@ PlotProfile.onDisplay = function (){
     PlotProfile.initLock = false
 };
 
+//Detect and memorize all lines regions
+//Print plot profile if there is any, or a message otherwise
 PlotProfile.addAllRegions = function(div){
     PlotProfile.pp = [];
     PlotProfile.ppid = [];
@@ -52,11 +57,15 @@ PlotProfile.addAllRegions = function(div){
     }
 };
 
+//Print an instruction message
 PlotProfile.printInstructionText = function(div){
     $(div).empty();
     $(div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
 }
 
+//Memorize a region given in parameter
+//  Change its color to avoid conflict
+//  get value of pixels under regions
 PlotProfile.newRegion = function(xreg){
     var cnb = 0, rnb = 0, color;
     var regions = JS9.GetRegions("all");
@@ -79,6 +88,7 @@ PlotProfile.newRegion = function(xreg){
     return res-1;
 };
 
+//remove a region from lists
 PlotProfile.deleteRegion = function(sn){
     PlotProfile.mainRegion = PlotProfile.mainRegion-1;
     PlotProfile.pp.splice(sn, 1);
@@ -86,6 +96,7 @@ PlotProfile.deleteRegion = function(sn){
     PlotProfile.ppcolors.splice(sn, 1);
 };
 
+//Get value of pixels under a line region
 PlotProfile.ppFromRegion = function(im, xreg){
     //check region is a line
     if(xreg.shape!=="line"){
@@ -110,6 +121,7 @@ PlotProfile.ppFromRegion = function(im, xreg){
     return pxValues;
 };
 
+//function to call when a region is modified (created, resized, selected, deleted)
 PlotProfile.regionChange = function(im, xreg){
     //check region is a line
     if(xreg.shape!=="line"){
@@ -150,6 +162,8 @@ PlotProfile.regionChange = function(im, xreg){
     
 };
 
+//functions to print pointer on canvas and circle on image when mouse move on canvas
+//delete it when mouse leave canvas
 PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
     eventHolder.mousemove(function (e) {
         plot.draw();
@@ -197,6 +211,7 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
     });
 };
 
+//calculate the angle between a line defined by the two points given in parameter and the X axis
 PlotProfile.calculateAngle = function(x1,y1,x2,y2){
     var dx = x2-x1;
     var dy = y2-y1;
@@ -219,6 +234,7 @@ PlotProfile.calculateAngle = function(x1,y1,x2,y2){
     }
 }
 
+//Register the plugin in JS9
 JS9.RegisterPlugin(PlotProfile.CLASS, PlotProfile.NAME, PlotProfile.init,
             {menu:"analysis",
             menuItem: "Plot Profile",
