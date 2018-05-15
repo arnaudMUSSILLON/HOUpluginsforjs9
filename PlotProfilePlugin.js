@@ -17,40 +17,49 @@ PlotProfile.ppid = [];//List of lines regions id
 PlotProfile.ppcolors = [];//List of lines regions colors
 PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];//List of somes colors 
 PlotProfile.mainRegion = 0;//Position in the list of last region to be selected, created or modified
-PlotProfile.roundRegion = -1;//Id of the circle region displayed when mouse is on plot canvas
+PlotProfile.roundShape = -1;//Id of round shape created when pointer move on plot zone
 PlotProfile.initLock = false;//Lock to avoid double execution of initialisations function in specific conditions
 
 //Initialisation function of the plugin
 PlotProfile.init = function(){
     'use strict';
-    PlotProfile.addAllRegions(this.div);
+    PlotProfile.div = this.div;
+    PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
+    PlotProfile.addAllRegions();
     PlotProfile.initLock = true;
 };
 
 //Function to call each time plugin window is open
-PlotProfile.onDisplay = function (){
+PlotProfile.onPluginDisplay = function (){
     'use strict';
+    PlotProfile.div = this.div;
     if(!PlotProfile.initLock){
-        PlotProfile.addAllRegions(this.div);
+        PlotProfile.addAllRegions();
     }
     PlotProfile.initLock = false;
 };
 
+PlotProfile.onImageDisplay = function(){
+    'use strict';
+    PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
+    PlotProfile.addAllRegions();
+};
+
 //Detect and memorize all lines regions
 //Print plot profile if there is any, or a message otherwise
-PlotProfile.addAllRegions = function(div){
+PlotProfile.addAllRegions = function(){
     'use strict';
     var noLineRegion, regions, i;
     PlotProfile.pp = [];
     PlotProfile.ppid = [];
     PlotProfile.ppcolors = [];
     PlotProfile.mainRegion = 0;
-    PlotProfile.roundRegion = -1;
+    PlotProfile.roundShape = -1;
     noLineRegion = true;
     
     regions = JS9.GetRegions("all");
     if(regions===null || regions.length===0){
-        PlotProfile.printInstructionText(div);
+        PlotProfile.printInstructionText(PlotProfile.div);
         return;
     }
     for(i=0;i<regions.length;i++){
@@ -60,15 +69,15 @@ PlotProfile.addAllRegions = function(div){
         }
     }
     if(noLineRegion){
-        PlotProfile.printInstructionText(div);
+        PlotProfile.printInstructionText(PlotProfile.div);
     }
 };
 
 //Print an instruction message
-PlotProfile.printInstructionText = function(div){
+PlotProfile.printInstructionText = function(){
     'use strict';
-    $(div).empty();
-    $(div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
+    $(PlotProfile.div).empty();
+    $(PlotProfile.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
 };
 
 //Memorize a region given in parameter
@@ -184,9 +193,10 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
         if(PlotProfile.mainRegion<0 || x_<0 || x_>=PlotProfile.pp[PlotProfile.mainRegion].length){
-            if(PlotProfile.roundRegion!==-1){
-                JS9.RemoveRegions(PlotProfile.roundRegion);
-                PlotProfile.roundRegion = -1;
+            if(PlotProfile.roundShape!==-1){
+                JS9.ActiveShapeLayer("regions");
+                JS9.RemoveShapes("PlotProfileShapeLayer",PlotProfile.roundShape);
+                PlotProfile.roundShape = -1;
             }
             return;
         }
@@ -210,17 +220,19 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         angle = PlotProfile.calculateAngle(x1,y1,x2,y2);
         px = x1+x_*Math.cos(angle);
         py = y1+x_*Math.sin(angle);
-        if(PlotProfile.roundRegion===-1){
-            PlotProfile.roundRegion = JS9.AddRegions("circle", {shape:"circle", x:px, y:py,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
+        //console.log(JS9.GetShapes("PlotProfileShapeLayer", "all").length)
+        if(PlotProfile.roundShape===-1){
+            PlotProfile.roundShape = JS9.AddShapes("PlotProfileShapeLayer","circle", {shape:"circle", x:px, y:py,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
         }else{
-            JS9.ChangeRegions(PlotProfile.roundRegion,{x:px, y:py});
+            JS9.ChangeShapes("PlotProfileShapeLayer",PlotProfile.roundShape,{x:px, y:py});
         }
     });
     eventHolder.mouseout(function (){
         plot.draw();
-        if(PlotProfile.roundRegion!==-1){
-            JS9.RemoveRegions(PlotProfile.roundRegion);
-            PlotProfile.roundRegion = -1;
+        if(PlotProfile.roundShape!==-1){
+            JS9.ActiveShapeLayer("regions");
+            JS9.RemoveShapes("PlotProfileShapeLayer",PlotProfile.roundShape);
+            PlotProfile.roundShape = -1;
         }
     });
 };
@@ -255,7 +267,8 @@ JS9.RegisterPlugin(PlotProfile.CLASS, PlotProfile.NAME, PlotProfile.init,
             {menu:"analysis",
             menuItem: "Plot Profile",
             onregionschange: PlotProfile.regionChange,
-            onplugindisplay: PlotProfile.onDisplay,
+            onplugindisplay: PlotProfile.onPluginDisplay,
+            onimagedisplay: PlotProfile.onImageDisplay,
             winTitle: "Plot Profile",
             winResize: true,
             winDims: [PlotProfile.WIDTH, PlotProfile.HEIGHT]});
