@@ -112,7 +112,12 @@ PlotProfile.newRegion = function(xreg){
 //remove a region from lists
 PlotProfile.deleteRegion = function(xreg){
     'use strict';
-    PlotProfile.mainRegion = -1;
+    var regions = JS9.GetRegions("all");
+    if(regions===null || regions.length===0){
+        PlotProfile.mainRegion = -1;
+    }else{
+        PlotProfile.mainRegion = regions[0].id;
+    }
     PlotProfile.pp[xreg.id] = null;
     PlotProfile.ppcolors[xreg.id]=null;
 };
@@ -197,7 +202,7 @@ PlotProfile.regionChange = function(im, xreg){
 PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
     'use strict';
     eventHolder.mousemove(function (e) {
-        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, imx, imy/*, phyx, phyy*/;
+        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, imx, imy, wcs, ydispl=20;
         plot.draw();
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
@@ -220,8 +225,7 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         angle = PlotProfile.calculateAngle(x1,y1,x2,y2);
         imx = Math.floor(x1+x_*Math.cos(angle));
         imy = Math.floor(y1+x_*Math.sin(angle));
-        /*console.log(imx+" "+imy)
-        console.log(JS9.PixToWCS(imx,imy))*/
+        wcs = JS9.PixToWCS(imx,imy);
         ctx = plot.getCanvas().getContext("2d");
         ctx.moveTo(lineX, plot.getPlotOffset().top);
         ctx.lineTo(lineX, plot.getCanvas().height-plot.getPlotOffset().bottom);
@@ -231,7 +235,11 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         ctx.stroke();
         ctx.font = "10px Arial";
         ctx.fillText("Position on image:    x:"+imx+", y:"+imy, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
-        ctx.fillText("Position on line:"+x_+" value:"+y_, plot.getPlotOffset().left, 20+plot.getPlotOffset().top);
+        if (wcs!==undefined){
+            ctx.fillText("WCS position:    "+wcs.str, plot.getPlotOffset().left, 20+plot.getPlotOffset().top);
+            ydispl = 30;
+        }
+        ctx.fillText("Position on line:"+x_+" value:"+y_, plot.getPlotOffset().left, ydispl+plot.getPlotOffset().top);
         if(PlotProfile.roundShape===-1){
             PlotProfile.roundShape = JS9.AddShapes("PlotProfileShapeLayer","circle", {shape:"circle", x:imx, y:imy,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
         }else{
