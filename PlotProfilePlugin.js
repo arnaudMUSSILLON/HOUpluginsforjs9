@@ -8,15 +8,14 @@ var PlotProfile;
 PlotProfile = {};
 PlotProfile.CLASS = "HandsOnUniverse";
 PlotProfile.NAME = "PlotProfile";
-PlotProfile.WIDTH =  400;
-PlotProfile.HEIGHT = 200;
+PlotProfile.WIDTH =  600;
+PlotProfile.HEIGHT = 400;
 
 //Init memory used by plugin
 PlotProfile.pp = [];//List of pixel values under lines regions
-PlotProfile.ppid = [];//List of lines regions id
 PlotProfile.ppcolors = [];//List of lines regions colors
 PlotProfile.POSSIBLE_COLORS = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF", "#FF8000", "#00FF80", "#8000FF"];//List of somes colors 
-PlotProfile.mainRegion = 0;//Position in the list of last region to be selected, created or modified
+PlotProfile.mainRegion = -1;//Id of of last region to be selected, created or modified
 PlotProfile.roundShape = -1;//Id of round shape created when pointer move on plot zone
 PlotProfile.initLock = false;//Lock to avoid double execution of initialisations function in specific conditions
 
@@ -51,9 +50,8 @@ PlotProfile.addAllRegions = function(){
     'use strict';
     var noLineRegion, regions, i;
     PlotProfile.pp = [];
-    PlotProfile.ppid = [];
     PlotProfile.ppcolors = [];
-    PlotProfile.mainRegion = 0;
+    PlotProfile.mainRegion = -1;
     PlotProfile.roundShape = -1;
     noLineRegion = true;
     
@@ -87,6 +85,12 @@ PlotProfile.newRegion = function(xreg){
     'use strict';
     var cnb = 0, rnb = 0, color, regions, res;
     regions = JS9.GetRegions("all");
+    color = xreg.color;
+    for(rnb=0;rnb<regions.length && color!==undefined;rnb++){
+        if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
+            color = undefined;
+        }
+    }
     while(cnb<PlotProfile.POSSIBLE_COLORS.length && color===undefined){
         color = PlotProfile.POSSIBLE_COLORS[cnb];
         for(rnb=0;rnb<regions.length;rnb++){
@@ -99,20 +103,18 @@ PlotProfile.newRegion = function(xreg){
     if(color===undefined){
         color = "#808080";
     }
-    PlotProfile.pp.push([]);
-    PlotProfile.ppid.push(xreg.id);
-    res = PlotProfile.ppcolors.push(color);
+    PlotProfile.pp[xreg.id]=[];
+    res = PlotProfile.ppcolors[xreg.id] = color;
     JS9.ChangeRegions(xreg.id, {color: color});
     return res-1;
 };
 
 //remove a region from lists
-PlotProfile.deleteRegion = function(sn){
+PlotProfile.deleteRegion = function(xreg){
     'use strict';
-    PlotProfile.mainRegion = PlotProfile.mainRegion-1;
-    PlotProfile.pp.splice(sn, 1);
-    PlotProfile.ppid.splice(sn, 1);
-    PlotProfile.ppcolors.splice(sn, 1);
+    PlotProfile.mainRegion = -1;
+    PlotProfile.pp[xreg.id] = null;
+    PlotProfile.ppcolors[xreg.id]=null;
 };
 
 //Get value of pixels under a line region
@@ -141,45 +143,53 @@ PlotProfile.ppFromRegion = function(im, xreg){
     return pxValues;
 };
 
+//Return an object containing Plotprofile.pp and PlotProfile.ppcolors without undefined or null values
+PlotProfile.dataToPlot = function(){
+    'use strict';
+    var i, res = {};
+    res.pp = [];
+    res.colors = [];
+    for(i=0;i<PlotProfile.pp.length;i++){
+        if(PlotProfile.pp[i]!==undefined && PlotProfile.pp[i]!==null){
+            res.pp.push(PlotProfile.pp[i]);
+            res.colors.push(PlotProfile.ppcolors[i]);
+        }
+    }
+    return res;
+};
+
+
 //function to call when a region is modified (created, resized, selected, deleted)
 PlotProfile.regionChange = function(im, xreg){
     'use strict';
-    var mode, sn, i;
+    var mode, plotData;
     //check region is a line
     if(xreg.shape!=="line"){
         return;
     }
     //find region location in tables
     mode = xreg.mode;
-    sn = -1;
-    if(mode==="update" || mode==="remove" || mode==="select"){
-        for(i=0;i<PlotProfile.ppid.length;i++){
-            if(PlotProfile.ppid[i]===xreg.id){
-                sn = i;
-            }
-        }
+    if (mode==="add" || (PlotProfile.pp[xreg.id]===null && mode!=="remove")){
+        PlotProfile.newRegion(xreg);
     }
-    if (mode==="add" || (sn===-1 && mode!=="remove")){
-        sn = PlotProfile.newRegion(xreg);
-    }
-    PlotProfile.mainRegion = sn;
+    PlotProfile.mainRegion = xreg.id;
     //change tables values
     if(mode==="select"){
         return;
     }
-    if(mode==="remove" && sn!==-1){
-        PlotProfile.deleteRegion(sn);
+    if(mode==="remove"){
+        PlotProfile.deleteRegion(xreg);
     }
     if(mode==="update"){
-        PlotProfile.pp[sn] = PlotProfile.ppFromRegion(im, xreg);
-        PlotProfile.ppcolors[sn] = xreg.color;
+        PlotProfile.pp[xreg.id] = PlotProfile.ppFromRegion(im, xreg);
+        PlotProfile.ppcolors[xreg.id] = xreg.color;
     }
-    if (PlotProfile.pp.length===0){
+    plotData = PlotProfile.dataToPlot();
+    if (plotData.pp.length===0){
         PlotProfile.printInstructionText();
     }else{
-        $.plot(this.div, PlotProfile.pp, { zoomStack: true, selection: { mode: "xy" }, colors: PlotProfile.ppcolors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
+        $.plot(this.div, plotData.pp, { zoomStack: true, selection: { mode: "xy" }, colors: plotData.colors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
     }
-    
 };
 
 //functions to print pointer on canvas and circle on image when mouse move on canvas
@@ -202,7 +212,7 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         y_ = PlotProfile.pp[PlotProfile.mainRegion][x_][1];
         lineX = mouseX + plot.getPlotOffset().left;
         lineY = plot.getAxes().yaxis.p2c(y_) + plot.getPlotOffset().top;
-        reg = JS9.GetRegions(PlotProfile.ppid[PlotProfile.mainRegion])[0];
+        reg = JS9.GetRegions(PlotProfile.mainRegion)[0];
         x1 = reg.pts[0].x;
         y1 = reg.pts[0].y;
         x2 = reg.pts[1].x;
