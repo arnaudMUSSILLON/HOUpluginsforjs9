@@ -202,7 +202,7 @@ PlotProfile.regionChange = function(im, xreg){
 PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
     'use strict';
     eventHolder.mousemove(function (e) {
-        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, imx, imy, wcs, ydispl=20;
+        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, imx, imy, wcs, ydispl=20, txt, maxTxtWidth;
         plot.draw();
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
@@ -227,19 +227,34 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         imy = Math.floor(y1+x_*Math.sin(angle));
         wcs = JS9.PixToWCS(imx,imy);
         ctx = plot.getCanvas().getContext("2d");
-        ctx.moveTo(lineX, plot.getPlotOffset().top);
-        ctx.lineTo(lineX, plot.getCanvas().height-plot.getPlotOffset().bottom);
-        ctx.stroke();
-        ctx.moveTo(plot.getPlotOffset().left, lineY);
-        ctx.lineTo(plot.getCanvas().width-plot.getPlotOffset().right,lineY);
-        ctx.stroke();
         ctx.font = "10px Arial";
-        ctx.fillText("Position on image:    x:"+imx+", y:"+imy, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
+        txt = "Position on image:    x:"+imx+", y:"+imy;
+        maxTxtWidth = ctx.measureText(txt).width;
+        ctx.fillText(txt, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
         if (wcs!==undefined){
-            ctx.fillText("WCS position:    "+wcs.str, plot.getPlotOffset().left, 20+plot.getPlotOffset().top);
+            txt = "WCS position:    "+wcs.str;
+            ctx.fillText(txt, plot.getPlotOffset().left, 20+plot.getPlotOffset().top);
+            maxTxtWidth = Math.max(maxTxtWidth, ctx.measureText(txt).width);
             ydispl = 30;
         }
-        ctx.fillText("Position on line:"+x_+" value:"+y_, plot.getPlotOffset().left, ydispl+plot.getPlotOffset().top);
+        txt = "Position on line:"+x_+" value:"+y_;
+        maxTxtWidth = Math.max(maxTxtWidth, ctx.measureText(txt).width);
+        ctx.fillText(txt, plot.getPlotOffset().left, ydispl+plot.getPlotOffset().top);
+        if(lineX<plot.getPlotOffset().left+maxTxtWidth){
+            ctx.moveTo(lineX, plot.getPlotOffset().top+ydispl);
+        }else{
+            ctx.moveTo(lineX, plot.getPlotOffset().top);
+        }
+        ctx.lineTo(lineX, plot.getCanvas().height-plot.getPlotOffset().bottom);
+        ctx.stroke();
+        if(lineY<plot.getPlotOffset().top+ydispl){
+            ctx.moveTo(plot.getPlotOffset().left+maxTxtWidth, lineY);
+        }else{
+            ctx.moveTo(plot.getPlotOffset().left, lineY);
+        }
+        ctx.lineTo(plot.getCanvas().width-plot.getPlotOffset().right,lineY);
+        ctx.stroke();
+        
         if(PlotProfile.roundShape===-1){
             PlotProfile.roundShape = JS9.AddShapes("PlotProfileShapeLayer","circle", {shape:"circle", x:imx, y:imy,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
         }else{
