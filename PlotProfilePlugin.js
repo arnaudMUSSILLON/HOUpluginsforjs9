@@ -6,8 +6,8 @@
 var PlotProfile;
 // create namespace, and specify some meta-information and params
 PlotProfile = {};
-PlotProfile.CLASS = "PlotProfile";
-PlotProfile.NAME = "plpr";
+PlotProfile.CLASS = "HandsOnUniverse";
+PlotProfile.NAME = "PlotProfile";
 PlotProfile.WIDTH =  400;
 PlotProfile.HEIGHT = 200;
 
@@ -175,8 +175,7 @@ PlotProfile.regionChange = function(im, xreg){
         PlotProfile.ppcolors[sn] = xreg.color;
     }
     if (PlotProfile.pp.length===0){
-        $(this.div).empty();
-        $(this.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
+        PlotProfile.printInstructionText();
     }else{
         $.plot(this.div, PlotProfile.pp, { zoomStack: true, selection: { mode: "xy" }, colors: PlotProfile.ppcolors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
     }
@@ -188,7 +187,7 @@ PlotProfile.regionChange = function(im, xreg){
 PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
     'use strict';
     eventHolder.mousemove(function (e) {
-        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, px, py;
+        var mouseX, x_, y_, lineX, lineY, ctx, reg, x1, x2, y1, y2, angle, imx, imy/*, phyx, phyy*/;
         plot.draw();
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
@@ -203,6 +202,16 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         y_ = PlotProfile.pp[PlotProfile.mainRegion][x_][1];
         lineX = mouseX + plot.getPlotOffset().left;
         lineY = plot.getAxes().yaxis.p2c(y_) + plot.getPlotOffset().top;
+        reg = JS9.GetRegions(PlotProfile.ppid[PlotProfile.mainRegion])[0];
+        x1 = reg.pts[0].x;
+        y1 = reg.pts[0].y;
+        x2 = reg.pts[1].x;
+        y2 = reg.pts[1].y;
+        angle = PlotProfile.calculateAngle(x1,y1,x2,y2);
+        imx = Math.floor(x1+x_*Math.cos(angle));
+        imy = Math.floor(y1+x_*Math.sin(angle));
+        /*console.log(imx+" "+imy)
+        console.log(JS9.PixToWCS(imx,imy))*/
         ctx = plot.getCanvas().getContext("2d");
         ctx.moveTo(lineX, plot.getPlotOffset().top);
         ctx.lineTo(lineX, plot.getCanvas().height-plot.getPlotOffset().bottom);
@@ -211,20 +220,12 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         ctx.lineTo(plot.getCanvas().width-plot.getPlotOffset().right,lineY);
         ctx.stroke();
         ctx.font = "10px Arial";
-        ctx.fillText("x:"+x_+" y:"+y_, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
-        reg = JS9.GetRegions(PlotProfile.ppid[PlotProfile.mainRegion])[0];
-        x1 = reg.pts[0].x;
-        y1 = reg.pts[0].y;
-        x2 = reg.pts[1].x;
-        y2 = reg.pts[1].y;
-        angle = PlotProfile.calculateAngle(x1,y1,x2,y2);
-        px = x1+x_*Math.cos(angle);
-        py = y1+x_*Math.sin(angle);
-        //console.log(JS9.GetShapes("PlotProfileShapeLayer", "all").length)
+        ctx.fillText("Position on image:    x:"+imx+", y:"+imy, plot.getPlotOffset().left, 10+plot.getPlotOffset().top);
+        ctx.fillText("Position on line:"+x_+" value:"+y_, plot.getPlotOffset().left, 20+plot.getPlotOffset().top);
         if(PlotProfile.roundShape===-1){
-            PlotProfile.roundShape = JS9.AddShapes("PlotProfileShapeLayer","circle", {shape:"circle", x:px, y:py,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
+            PlotProfile.roundShape = JS9.AddShapes("PlotProfileShapeLayer","circle", {shape:"circle", x:imx, y:imy,radius:5 , color:PlotProfile.ppcolors[PlotProfile.mainRegion]});
         }else{
-            JS9.ChangeShapes("PlotProfileShapeLayer",PlotProfile.roundShape,{x:px, y:py});
+            JS9.ChangeShapes("PlotProfileShapeLayer",PlotProfile.roundShape,{x:imx, y:imy});
         }
     });
     eventHolder.mouseout(function (){
