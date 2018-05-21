@@ -13,8 +13,9 @@ JS9 on GitHub : https://github.com/ericmandel/js9
 
 Plugins
 -------
-Plot profile : Draw the plot profile of any line region in the image  
+
 Contrast : Change the contrast of image using two sliders  
+Plot profile : Draw the plot profile of any line region in the image  
 
 
 Examples
