@@ -10,11 +10,22 @@
       <script type="text/javascript" src="js9/js9.min.js"></script>
       <script type="text/javascript" src="js9/js9plugins.js"></script>
       <script type="text/javascript" src="PlotProfilePlugin.js"></script>
+      <script type="text/javascript" src="ContrastPlugin.js"></script>
 </head>
 <body>
-    <p>Open an image file, then go to menu Analysis, and click on Plot Profile. You can now see plot profile of any line region you add</p>
-    <div class="JS9Menubar"></div>
-    <div class="JS9Toolbar"></div>
-    <div class="JS9"></div>
-    <div class="JS9Colorbar"></div>
+    <table cellspacing="30">
+        <tr valign="top">
+        <td>
+            <div class="JS9Menubar"></div>
+            <div class="JS9Toolbar"></div>
+            <div class="JS9" id="JS9"></div>
+            <div class="JS9Colorbar"></div>
+        </td>
+        <td>
+            <p>Open an image file. You can change contrast by moving sliders</p>
+            <div class="HandsOnUniverseContrast" data-js9id="JS9"></div>
+        </td>
+        </tr>
+    </table>
+    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
 </body>
