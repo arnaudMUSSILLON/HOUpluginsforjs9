@@ -8,7 +8,7 @@ var ContrastPlugin;
 ContrastPlugin = {};
 ContrastPlugin.CLASS = "HandsOnUniverse";
 ContrastPlugin.NAME = "Contrast";
-ContrastPlugin.WIDTH =  200;
+ContrastPlugin.WIDTH =  600;
 ContrastPlugin.HEIGHT = 200;
 
 //Initialisation function of the plugin
@@ -22,7 +22,7 @@ ContrastPlugin.init = function(){
 //Print an instruction message
 ContrastPlugin.printDiv = function(){
     'use strict';
-    var im, imMin, imMax, scale;
+    var im, imMin, imMax, scale, head;
     scale = JS9.GetScale();
     im = JS9.GetImage();
     $(ContrastPlugin.div).empty();
@@ -38,11 +38,14 @@ ContrastPlugin.printDiv = function(){
     ContrastPlugin.maxVal = document.createElement("DIV");
     $(ContrastPlugin.minVal).append(scale.scalemin);
     $(ContrastPlugin.maxVal).append(scale.scalemax);
+    head = document.getElementsByTagName('head')[0];
+    $(head).append("<style> .ContrastPluginSlider { width: 98%; } </style>")
     ContrastPlugin.slidermin = document.createElement("INPUT");
     ContrastPlugin.slidermin.setAttribute("type","range");
     ContrastPlugin.slidermin.setAttribute("min",imMin);
     ContrastPlugin.slidermin.setAttribute("max",imMax);
     ContrastPlugin.slidermin.setAttribute("value",scale.scalemin);
+    ContrastPlugin.slidermin.setAttribute("class","ContrastPluginSlider");
     ContrastPlugin.slidermin.setAttribute("id","ContrastPluginSliderMin");
     ContrastPlugin.slidermin.oninput = ContrastPlugin.onSliderChange;
     ContrastPlugin.slidermax = document.createElement("INPUT");
@@ -50,6 +53,7 @@ ContrastPlugin.printDiv = function(){
     ContrastPlugin.slidermax.setAttribute("min",imMin);
     ContrastPlugin.slidermax.setAttribute("max",imMax);
     ContrastPlugin.slidermax.setAttribute("value",scale.scalemax);
+    ContrastPlugin.slidermax.setAttribute("class","ContrastPluginSlider");
     ContrastPlugin.slidermax.setAttribute("id","ContrastPluginSliderMax");
     ContrastPlugin.slidermax.oninput = ContrastPlugin.onSliderChange;
     $(ContrastPlugin.div).append("Minimum : <br>");
