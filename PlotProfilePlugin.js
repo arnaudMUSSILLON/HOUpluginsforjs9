@@ -164,10 +164,13 @@ PlotProfile.newRegion = function(xreg){
 PlotProfile.deleteRegion = function(xreg){
     'use strict';
     var regions = JS9.GetRegions("all");
-    if(regions===null || regions.length===0){
+    if(regions===null || regions.length<=1){
         PlotProfile.mainRegion = -1;
     }else{
         PlotProfile.mainRegion = regions[0].id;
+        if(PlotProfile.mainRegion===xreg.id){
+            PlotProfile.mainRegion = regions[1].id;
+        }
     }
     PlotProfile.pp[xreg.id] = null;
     PlotProfile.ppcolors[xreg.id]=null;
@@ -273,6 +276,7 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         plot.draw();
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
+        //console.log(PlotProfile.mainRegion)
         if(PlotProfile.mainRegion<0 || x_<0 || x_>=PlotProfile.pp[PlotProfile.mainRegion].length){
             if(PlotProfile.roundShape!==-1){
                 JS9.ActiveShapeLayer("regions");
