@@ -1,4 +1,4 @@
-/*global $, JS9 */
+/*global $, JS9, document */
 /*jslint white: true */
 /*jslint plusplus: true */
 /*jslint nomen: true*/
@@ -19,20 +19,41 @@ PlotProfile.mainRegion = -1;//Id of of last region to be selected, created or mo
 PlotProfile.roundShape = -1;//Id of round shape created when pointer move on plot zone
 PlotProfile.initLock = false;//Lock to avoid double execution of initialisations function in specific conditions
 
+
 //Initialisation function of the plugin
 PlotProfile.init = function(){
     'use strict';
-    PlotProfile.div = this.div;
+    PlotProfile.createDiv(this.div);
     PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
     PlotProfile.addAllRegions();
     PlotProfile.initLock = true;
 };
 
+PlotProfile.createDiv = function(div){
+    var checkDiv, head;
+    head = document.getElementsByTagName('head')[0];
+    $(head).append("<style> .PlotProfilePlotDiv { height: "+(PlotProfile.HEIGHT-20)+"px; } </style>")
+    PlotProfile.div = document.createElement("DIV");
+    PlotProfile.div.setAttribute("class","PlotProfilePlotDiv");
+    checkDiv = document.createElement("DIV");
+    checkDiv.setAttribute("id","test2");
+    PlotProfile.autoColor = document.createElement("INPUT");
+    PlotProfile.autoColor.setAttribute("id","PlotProfileAutoColor");
+    PlotProfile.autoColor.setAttribute("type","checkbox");
+    PlotProfile.autoColor.setAttribute("onclick","PlotProfile.onAutoColorClicked()")
+    $(checkDiv).append(PlotProfile.autoColor);
+    $(checkDiv).append("<label for='PlotProfileAutoColor'>Auto color lines</label>");
+    $(div).empty();
+    $(div).append(checkDiv);
+    $(div).append(PlotProfile.div);
+}
+
+
 //Function to call each time plugin window is open
 PlotProfile.onPluginDisplay = function (){
     'use strict';
-    PlotProfile.div = this.div;
     if(!PlotProfile.initLock){
+        PlotProfile.createDiv(this.div);
         PlotProfile.addAllRegions();
     }
     PlotProfile.initLock = false;
@@ -43,6 +64,12 @@ PlotProfile.onImageDisplay = function(){
     PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
     PlotProfile.addAllRegions();
 };
+
+PlotProfile.onAutoColorClicked = function(){
+    if(PlotProfile.autoColor.checked){
+        PlotProfile.addAllRegions();
+    }
+}
 
 //Detect and memorize all lines regions
 //Print plot profile if there is any, or a message otherwise
@@ -84,24 +111,26 @@ PlotProfile.printInstructionText = function(){
 PlotProfile.newRegion = function(xreg){
     'use strict';
     var cnb = 0, rnb = 0, color, regions, res;
-    regions = JS9.GetRegions("all");
-    color = xreg.color;
-    for(rnb=0;rnb<regions.length && color!==undefined;rnb++){
-        if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
-            color = undefined;
-        }
-    }
-    while(cnb<PlotProfile.POSSIBLE_COLORS.length && color===undefined){
-        color = PlotProfile.POSSIBLE_COLORS[cnb];
-        for(rnb=0;rnb<regions.length;rnb++){
+    if(PlotProfile.autoColor.checked){
+        regions = JS9.GetRegions("all");
+        color = xreg.color;
+        for(rnb=0;rnb<regions.length && color!==undefined;rnb++){
             if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
                 color = undefined;
             }
         }
-        cnb++;
-    }
-    if(color===undefined){
-        color = "#808080";
+        while(cnb<PlotProfile.POSSIBLE_COLORS.length && color===undefined){
+            color = PlotProfile.POSSIBLE_COLORS[cnb];
+            for(rnb=0;rnb<regions.length;rnb++){
+                if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
+                    color = undefined;
+                }
+            }
+            cnb++;
+        }
+        if(color===undefined){
+            color = "#808080";
+        }
     }
     PlotProfile.pp[xreg.id]=[];
     res = PlotProfile.ppcolors[xreg.id] = color;
@@ -193,7 +222,7 @@ PlotProfile.regionChange = function(im, xreg){
     if (plotData.pp.length===0){
         PlotProfile.printInstructionText();
     }else{
-        $.plot(this.div, plotData.pp, { zoomStack: true, selection: { mode: "xy" }, colors: plotData.colors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
+        $.plot(PlotProfile.div, plotData.pp, { zoomStack: true, selection: { mode: "xy" }, colors: plotData.colors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
     }
 };
 
