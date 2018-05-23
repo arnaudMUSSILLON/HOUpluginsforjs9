@@ -12,7 +12,7 @@ PhotometryPlugin.WIDTH =  600;
 PhotometryPlugin.HEIGHT = 400;
 
 //constants used by plugin
-PhotometryPlugin.SEARCH_SQUARE = 10;
+PhotometryPlugin.SEARCH_SQUARE = 20;
 PhotometryPlugin.STAR_RADIUS_MULT = 2;
 PhotometryPlugin.SKY_RADIUS_MULT = 5;
 
@@ -96,7 +96,7 @@ PhotometryPlugin.onClickButton = function(button){
 
 PhotometryPlugin.onClickImage = function(im, ipos){
     'use strict';
-    var i, j, id, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY;
+    var i, j, id, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY, a, b;
     if(PhotometryPlugin.action!=="Auto add region"){
         return;
     }
@@ -122,16 +122,24 @@ PhotometryPlugin.onClickImage = function(im, ipos){
     hvp = [undefined, undefined, undefined, undefined];
     while(i<PhotometryPlugin.SEARCH_SQUARE*2 && nb<4){
         if(im.raw.data[(maxY-i)*im.raw.width+maxX]<maxVal/2 && hvp[0]===undefined){
-            hvp[0]=i;
+            a = -(im.raw.data[(maxY-i)*im.raw.width+maxX]-im.raw.data[(maxY-i+1)*im.raw.width+maxX]);
+            b = im.raw.data[(maxY-i)*im.raw.width+maxX] + a*i;
+            hvp[0]=-(maxVal/2 - b)/a;
             nb++;
         }if(im.raw.data[(maxY+i)*im.raw.width+maxX]<maxVal/2 && hvp[1]===undefined){
-            hvp[1]=i-1;
+            a = im.raw.data[(maxY+i)*im.raw.width+maxX]-im.raw.data[(maxY+i-1)*im.raw.width+maxX];
+            b = im.raw.data[(maxY+i)*im.raw.width+maxX] - a*i;
+            hvp[1]=(maxVal/2 - b)/a;
             nb++;
         }if(im.raw.data[maxY*im.raw.width+(maxX-i)]<maxVal/2 && hvp[2]===undefined){
-            hvp[2]=i;
+            a = -(im.raw.data[maxY*im.raw.width+(maxX-i)]-im.raw.data[maxY*im.raw.width+(maxX-i+1)]);
+            b = im.raw.data[maxY*im.raw.width+(maxX-i)] + a*i;
+            hvp[2]=-(maxVal/2 - b)/a;
             nb++;
         }if(im.raw.data[maxY*im.raw.width+(maxX+i)]<maxVal/2 && hvp[3]===undefined){
-            hvp[3]=i-1;
+            a = im.raw.data[maxY*im.raw.width+(maxX+i)]-im.raw.data[maxY*im.raw.width+(maxX+i-1)];
+            b = im.raw.data[maxY*im.raw.width+(maxX+i)] - a*i;
+            hvp[3]=(maxVal/2 - b)/a;
             nb++;
         }
         i++;
