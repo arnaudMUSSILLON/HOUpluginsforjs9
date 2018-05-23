@@ -1,4 +1,4 @@
-/*global $, JS9 */
+/*global $, JS9, document */
 /*jslint white: true */
 /*jslint plusplus: true */
 /*jslint nomen: true*/
@@ -19,29 +19,75 @@ PlotProfile.mainRegion = -1;//Id of of last region to be selected, created or mo
 PlotProfile.roundShape = -1;//Id of round shape created when pointer move on plot zone
 PlotProfile.initLock = false;//Lock to avoid double execution of initialisations function in specific conditions
 
+
 //Initialisation function of the plugin
 PlotProfile.init = function(){
     'use strict';
-    PlotProfile.div = this.div;
+    PlotProfile.createDiv(this.div);
     PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
     PlotProfile.addAllRegions();
     PlotProfile.initLock = true;
 };
 
+//create html divisions for plot
+PlotProfile.createDiv = function(div){
+    'use strict';
+    var checkDiv, head;
+    head = document.getElementsByTagName('head')[0];
+    $(head).append("<style> .PlotProfilePlotDiv { height: "+(PlotProfile.HEIGHT-20)+"px; } </style>");
+    PlotProfile.div = document.createElement("DIV");
+    PlotProfile.div.setAttribute("class","PlotProfilePlotDiv");
+    checkDiv = document.createElement("DIV");
+    checkDiv.setAttribute("id","test2");
+    PlotProfile.autoColor = document.createElement("INPUT");
+    PlotProfile.autoColor.setAttribute("id","PlotProfileAutoColor");
+    PlotProfile.autoColor.setAttribute("type","checkbox");
+    PlotProfile.autoColor.setAttribute("onclick","PlotProfile.onAutoColorClicked()");
+    PlotProfile.oneLine = document.createElement("INPUT");
+    PlotProfile.oneLine.setAttribute("id","PlotProfileOneLine");
+    PlotProfile.oneLine.setAttribute("type","checkbox");
+    PlotProfile.oneLine.setAttribute("onclick","PlotProfile.onOneLineClicked()");
+    $(checkDiv).append(PlotProfile.autoColor);
+    $(checkDiv).append("<label for='PlotProfileAutoColor'>Auto color lines</label>");
+    $(checkDiv).append(PlotProfile.oneLine);
+    $(checkDiv).append("<label for='PlotProfileOneLine'>Display only one plot profile</label>");
+    $(div).empty();
+    $(div).append(checkDiv);
+    $(div).append(PlotProfile.div);
+};
+
+
 //Function to call each time plugin window is open
 PlotProfile.onPluginDisplay = function (){
     'use strict';
-    PlotProfile.div = this.div;
     if(!PlotProfile.initLock){
+        PlotProfile.createDiv(this.div);
         PlotProfile.addAllRegions();
     }
     PlotProfile.initLock = false;
 };
 
+//function to call when image change
 PlotProfile.onImageDisplay = function(){
     'use strict';
     PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
     PlotProfile.addAllRegions();
+};
+
+//function to call when checkbox autoColor change value
+//    Will change the color to avoid conflicts if box is checked
+PlotProfile.onAutoColorClicked = function(){
+    'use strict';
+    if(PlotProfile.autoColor.checked){
+        PlotProfile.addAllRegions();
+    }
+};
+
+//function to call when checkbox oneLine change value
+//    Redraw plot profile
+PlotProfile.onOneLineClicked = function(){
+    'use strict';
+    PlotProfile.plot();
 };
 
 //Detect and memorize all lines regions
@@ -57,7 +103,7 @@ PlotProfile.addAllRegions = function(){
     
     regions = JS9.GetRegions("all");
     if(regions===null || regions.length===0){
-        PlotProfile.printInstructionText(PlotProfile.div);
+        PlotProfile.printInstructionText();
         return;
     }
     for(i=0;i<regions.length;i++){
@@ -67,41 +113,46 @@ PlotProfile.addAllRegions = function(){
         }
     }
     if(noLineRegion){
-        PlotProfile.printInstructionText(PlotProfile.div);
+        PlotProfile.printInstructionText();
     }
 };
 
 //Print an instruction message
-PlotProfile.printInstructionText = function(){
+PlotProfile.printInstructionText = function(message){
     'use strict';
+    if(message===undefined){
+        message = "Create a line region to see plot profile";
+    }
     $(PlotProfile.div).empty();
-    $(PlotProfile.div).append("<p style='padding: 20px 0px 0px 20px; margin: 0px'>create a line region to see plot profile<br>");
+    $(PlotProfile.div).append("<p>"+message+"</p>");
 };
 
 //Memorize a region given in parameter
-//  Change its color to avoid conflict
+//  Change its color to avoid conflict if correspoding box is checked
 //  get value of pixels under regions
 PlotProfile.newRegion = function(xreg){
     'use strict';
     var cnb = 0, rnb = 0, color, regions, res;
-    regions = JS9.GetRegions("all");
-    color = xreg.color;
-    for(rnb=0;rnb<regions.length && color!==undefined;rnb++){
-        if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
-            color = undefined;
-        }
-    }
-    while(cnb<PlotProfile.POSSIBLE_COLORS.length && color===undefined){
-        color = PlotProfile.POSSIBLE_COLORS[cnb];
-        for(rnb=0;rnb<regions.length;rnb++){
+    if(PlotProfile.autoColor.checked){
+        regions = JS9.GetRegions("all");
+        color = xreg.color;
+        for(rnb=0;rnb<regions.length && color!==undefined;rnb++){
             if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
                 color = undefined;
             }
         }
-        cnb++;
-    }
-    if(color===undefined){
-        color = "#808080";
+        while(cnb<PlotProfile.POSSIBLE_COLORS.length && color===undefined){
+            color = PlotProfile.POSSIBLE_COLORS[cnb];
+            for(rnb=0;rnb<regions.length;rnb++){
+                if(regions[rnb].shape==="line" && regions[rnb].id!==xreg.id && regions[rnb].color===color){
+                    color = undefined;
+                }
+            }
+            cnb++;
+        }
+        if(color===undefined){
+            color = "#808080";
+        }
     }
     PlotProfile.pp[xreg.id]=[];
     res = PlotProfile.ppcolors[xreg.id] = color;
@@ -113,10 +164,13 @@ PlotProfile.newRegion = function(xreg){
 PlotProfile.deleteRegion = function(xreg){
     'use strict';
     var regions = JS9.GetRegions("all");
-    if(regions===null || regions.length===0){
+    if(regions===null || regions.length<=1){
         PlotProfile.mainRegion = -1;
     }else{
         PlotProfile.mainRegion = regions[0].id;
+        if(PlotProfile.mainRegion===xreg.id){
+            PlotProfile.mainRegion = regions[1].id;
+        }
     }
     PlotProfile.pp[xreg.id] = null;
     PlotProfile.ppcolors[xreg.id]=null;
@@ -126,7 +180,6 @@ PlotProfile.deleteRegion = function(xreg){
 PlotProfile.ppFromRegion = function(im, xreg){
     'use strict';
     var x1, y1, x2, y2, dx, dy, angle, pxValues, lg, nb, xa, ya, v;
-    //check region is a line
     if(xreg.shape!=="line"){
         return;
     }
@@ -154,10 +207,19 @@ PlotProfile.dataToPlot = function(){
     var i, res = {};
     res.pp = [];
     res.colors = [];
-    for(i=0;i<PlotProfile.pp.length;i++){
-        if(PlotProfile.pp[i]!==undefined && PlotProfile.pp[i]!==null){
-            res.pp.push(PlotProfile.pp[i]);
-            res.colors.push(PlotProfile.ppcolors[i]);
+    if(PlotProfile.oneLine.checked){
+        if(PlotProfile.mainRegion===-1){
+            PlotProfile.printInstructionText("Create or select a line region to see plot profile");
+            return;
+        }
+        res.pp = [PlotProfile.pp[PlotProfile.mainRegion]];
+        res.colors = [PlotProfile.ppcolors[PlotProfile.mainRegion]];
+    }else{
+        for(i=0;i<PlotProfile.pp.length;i++){
+            if(PlotProfile.pp[i]!==undefined && PlotProfile.pp[i]!==null){
+                res.pp.push(PlotProfile.pp[i]);
+                res.colors.push(PlotProfile.ppcolors[i]);
+            }
         }
     }
     return res;
@@ -167,19 +229,18 @@ PlotProfile.dataToPlot = function(){
 //function to call when a region is modified (created, resized, selected, deleted)
 PlotProfile.regionChange = function(im, xreg){
     'use strict';
-    var mode, plotData;
+    var mode;
     //check region is a line
     if(xreg.shape!=="line"){
         return;
     }
-    //find region location in tables
     mode = xreg.mode;
     if (mode==="add" || (PlotProfile.pp[xreg.id]===null && mode!=="remove")){
         PlotProfile.newRegion(xreg);
     }
     PlotProfile.mainRegion = xreg.id;
     //change tables values
-    if(mode==="select"){
+    if(mode==="select" && !PlotProfile.oneLine.checked){
         return;
     }
     if(mode==="remove"){
@@ -189,11 +250,20 @@ PlotProfile.regionChange = function(im, xreg){
         PlotProfile.pp[xreg.id] = PlotProfile.ppFromRegion(im, xreg);
         PlotProfile.ppcolors[xreg.id] = xreg.color;
     }
-    plotData = PlotProfile.dataToPlot();
+    PlotProfile.plot();
+};
+
+//Display the plot profile
+PlotProfile.plot = function(){
+    'use strict';
+    var plotData = PlotProfile.dataToPlot();
+    if(plotData===undefined){
+        return;
+    }
     if (plotData.pp.length===0){
         PlotProfile.printInstructionText();
     }else{
-        $.plot(this.div, plotData.pp, { zoomStack: true, selection: { mode: "xy" }, colors: plotData.colors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
+        $.plot(PlotProfile.div, plotData.pp, { zoomStack: true, selection: { mode: "xy" }, colors: plotData.colors, hooks:{bindEvents:[PlotProfile.onMouseMoveOnCanvas]} });
     }
 };
 
@@ -206,6 +276,7 @@ PlotProfile.onMouseMoveOnCanvas = function(plot, eventHolder){
         plot.draw();
         mouseX = e.pageX - plot.offset().left;
         x_ = Math.floor(plot.getAxes().xaxis.c2p(mouseX));
+        //console.log(PlotProfile.mainRegion)
         if(PlotProfile.mainRegion<0 || x_<0 || x_>=PlotProfile.pp[PlotProfile.mainRegion].length){
             if(PlotProfile.roundShape!==-1){
                 JS9.ActiveShapeLayer("regions");
