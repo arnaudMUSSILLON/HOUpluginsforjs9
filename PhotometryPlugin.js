@@ -96,7 +96,7 @@ PhotometryPlugin.onClickButton = function(button){
 
 PhotometryPlugin.onClickImage = function(im, ipos){
     'use strict';
-    var i, j, k, x, y, id, nb, val, maxX, maxY, maxVal, halfValRadius = 0;
+    var i, j, id, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY;
     if(PhotometryPlugin.action!=="Auto add region"){
         return;
     }
@@ -117,30 +117,34 @@ PhotometryPlugin.onClickImage = function(im, ipos){
             }
         }
     }
-    k=1;
+    i = 1;
     nb = 0;
-    while(k<PhotometryPlugin.SEARCH_SQUARE && nb<3){
-        nb = 0;
-        for(i=-1;i<=1;i++){
-            for(j=-1;j<=1;j++){
-                if(i===0 || j===0){
-                    y = (k*j) + maxY;
-                    x = (k*i) + maxX;
-                    val = im.raw.data[y * im.raw.width + x];
-                    if(val<maxVal/2){
-                        nb++;
-                    }
-                }
-            }
+    hvp = [undefined, undefined, undefined, undefined];
+    while(i<PhotometryPlugin.SEARCH_SQUARE*2 && nb<4){
+        if(im.raw.data[(maxY-i)*im.raw.width+maxX]<maxVal/2 && hvp[0]===undefined){
+            hvp[0]=i;
+            nb++;
+        }if(im.raw.data[(maxY+i)*im.raw.width+maxX]<maxVal/2 && hvp[1]===undefined){
+            hvp[1]=i-1;
+            nb++;
+        }if(im.raw.data[maxY*im.raw.width+(maxX-i)]<maxVal/2 && hvp[2]===undefined){
+            hvp[2]=i;
+            nb++;
+        }if(im.raw.data[maxY*im.raw.width+(maxX+i)]<maxVal/2 && hvp[3]===undefined){
+            hvp[3]=i-1;
+            nb++;
         }
-        if(nb<3){
-            k++;
-        }else{
-            halfValRadius = k;
-        }
+        i++;
+    }
+    if(nb===4){
+        hvrY = (hvp[0] + hvp[1])/2;
+        hvrX = (hvp[2] + hvp[3])/2;
+        cY = maxY-hvp[0]+hvrY;
+        cX = maxX-hvp[2]+hvrX;
+        halfValRadius = (hvrX+hvrY)/2;
     }
     if(halfValRadius!==0){
-        id = JS9.AddRegions("annulus", {x:maxX,y:maxY,radii:[halfValRadius*PhotometryPlugin.STAR_RADIUS_MULT, halfValRadius*PhotometryPlugin.SKY_RADIUS_MULT]});
+        id = JS9.AddRegions("annulus", {x:cX,y:cY,radii:[halfValRadius*PhotometryPlugin.STAR_RADIUS_MULT, halfValRadius*PhotometryPlugin.SKY_RADIUS_MULT]});
         PhotometryPlugin.regions.push(id);
     }
 };
@@ -149,7 +153,6 @@ PhotometryPlugin.onClickImage = function(im, ipos){
 PhotometryPlugin.regionChange = function(im, xreg){
     'use strict';
     var i, mode;
-    //console.log(xreg);
     if(xreg.shape!=="annulus"){
         return;
     }
