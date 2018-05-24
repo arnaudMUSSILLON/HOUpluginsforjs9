@@ -13,8 +13,8 @@ PhotometryPlugin.HEIGHT = 400;
 
 //constants used by plugin
 PhotometryPlugin.SEARCH_SQUARE = 20;
-PhotometryPlugin.STAR_RADIUS_MULT = 2;
-PhotometryPlugin.SKY_RADIUS_MULT = 5;
+PhotometryPlugin.STAR_RADIUS_MULT = 3;
+PhotometryPlugin.SKY_RADIUS_MULT = 8;
 
 //Init memory used by plugin
 PhotometryPlugin.action = "";
@@ -66,7 +66,7 @@ PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
     if(message===undefined){
         message="Click on the buttons below to begin photometry mesure";
     }if(buttonsTxt===undefined){
-        buttonsTxt=["Auto add region","Use region"];
+        buttonsTxt=["Auto add region"];
     }
     $(PhotometryPlugin.txtDiv).empty();
     $(PhotometryPlugin.txtDiv).append("<p>"+message+"</p>");
@@ -88,10 +88,10 @@ PhotometryPlugin.onClickButton = function(button){
     }if(button==="Cancel"){
         PhotometryPlugin.action = "";
         PhotometryPlugin.printInstructionText();
-    }if(button==="Use region"){
+    }/*if(button==="Use region"){
         PhotometryPlugin.printInstructionText("Click on an anulus region to mesure photometry",["Cancel"]);
         PhotometryPlugin.action = button;
-    }
+    }*/
 };
 
 PhotometryPlugin.onClickImage = function(im, ipos){
@@ -172,6 +172,8 @@ PhotometryPlugin.regionChange = function(im, xreg){
                 i--;
             }
         }
+    }if(xreg.radii===2){
+        PhotometryPlugin.regions.push(xreg.id);
     }
 };
 
