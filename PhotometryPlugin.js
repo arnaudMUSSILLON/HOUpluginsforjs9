@@ -14,7 +14,8 @@ PhotometryPlugin.HEIGHT = 400;
 //constants used by plugin
 PhotometryPlugin.SEARCH_SQUARE = 20;
 PhotometryPlugin.STAR_RADIUS_MULT = 3;
-PhotometryPlugin.SKY_RADIUS_MULT = 8;
+PhotometryPlugin.MIN_SKY_RADIUS_MULT = 8;
+PhotometryPlugin.MAX_SKY_RADIUS_MULT = 10;
 
 //Init memory used by plugin
 PhotometryPlugin.action = "";
@@ -39,6 +40,7 @@ PhotometryPlugin.reinit = function(div){
     $(div).append(PhotometryPlugin.tabDiv);
     $(div).append(PhotometryPlugin.txtDiv);
     PhotometryPlugin.printInstructionText();
+    PhotometryPlugin.printTab();
 };
 
 //Function to call each time plugin window is open
@@ -75,6 +77,20 @@ PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
     }
 };
 
+PhotometryPlugin.printTab = function(){
+    var i, table, rphoto;
+    table = document.createElement("TABLE");
+    $(table).append("<tr><th>Star Value</th><th>Sky Value</th><th>Sky Median</th><th>Number of pixels</th><tr>");
+    for(i=0;i<PhotometryPlugin.photometry.length;i++){
+        rphoto = PhotometryPlugin.photometry[i]
+        if(rphoto!==null && rphoto!==undefined){
+            $(table).append("<tr><td>"+rphoto.starSum+"</td><td>"+rphoto.skyVal+"</td><td>"+rphoto.skyMed+"</td><td>"+rphoto.starNb+"</td>");
+        }
+    }
+    $(PhotometryPlugin.tabDiv).empty();
+    $(PhotometryPlugin.tabDiv).append(table);
+}
+
 PhotometryPlugin.onClickButton = function(button){
     'use strict';
     if(JS9.GetImage()===null){
@@ -88,15 +104,12 @@ PhotometryPlugin.onClickButton = function(button){
     }if(button==="Cancel"){
         PhotometryPlugin.action = "";
         PhotometryPlugin.printInstructionText();
-    }/*if(button==="Use region"){
-        PhotometryPlugin.printInstructionText("Click on an anulus region to mesure photometry",["Cancel"]);
-        PhotometryPlugin.action = button;
-    }*/
+    }
 };
 
 PhotometryPlugin.onClickImage = function(im, ipos){
     'use strict';
-    var i, j, id, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY, a, b;
+    var i, j, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY, a, b;
     if(PhotometryPlugin.action!=="Auto add region"){
         return;
     }
@@ -152,30 +165,68 @@ PhotometryPlugin.onClickImage = function(im, ipos){
         halfValRadius = (hvrX+hvrY)/2;
     }
     if(halfValRadius!==0){
-        id = JS9.AddRegions("annulus", {x:cX,y:cY,radii:[halfValRadius*PhotometryPlugin.STAR_RADIUS_MULT, halfValRadius*PhotometryPlugin.SKY_RADIUS_MULT]});
-        PhotometryPlugin.regions.push(id);
+        JS9.AddRegions("annulus", {x:cX,y:cY,radii:[halfValRadius*PhotometryPlugin.STAR_RADIUS_MULT, halfValRadius*PhotometryPlugin.MIN_SKY_RADIUS_MULT, halfValRadius*PhotometryPlugin.MAX_SKY_RADIUS_MULT]});
     }
 };
 
-//function to call when a region is modified (created, resized, selected, deleted)
 PhotometryPlugin.regionChange = function(im, xreg){
     'use strict';
-    var i, mode;
+    var mode;
     if(xreg.shape!=="annulus"){
         return;
     }
     mode = xreg.mode;
-    if(mode==="remove" || xreg.radii.length!==2){
-        for(i=0;i<PhotometryPlugin.regions.length;i++){
-            if(PhotometryPlugin.regions[i]===xreg.id){
-                PhotometryPlugin.regions.splice(i,1);
-                i--;
+    if(mode==="remove" || xreg.radii.length!==3){
+        PhotometryPlugin.photometry[xreg.id]=null;
+        return;
+    }if(mode==="select"){
+        return;
+    }
+    if(xreg.radii.length===3){
+        PhotometryPlugin.calculatePhotometry(im,xreg);
+    }
+    PhotometryPlugin.printTab();
+};
+
+PhotometryPlugin.calculatePhotometry = function(im, xreg){
+    var res = {}, i, j, c = {}, maxRadius=0;
+    if(xreg.shape!=="annulus" || xreg.radii.length!==3){
+        return;
+    }
+    res.skyPix = [];
+    res.starSum = 0;
+    res.starNb = 0;
+    c.x = Math.floor(xreg.x);
+    c.y = Math.floor(xreg.y);
+    for(i=0;i<xreg.radii.length;i++){
+        if(xreg.radii[i]>maxRadius){
+            maxRadius = xreg.radii[i];
+        }
+    }
+    for(i=Math.floor(-maxRadius-1); i<Math.floor(maxRadius+2); i++){
+        for(j=Math.floor(-maxRadius-1); j<Math.floor(maxRadius+2); j++){
+            if(i*i+j*j>=xreg.radii[1]*xreg.radii[1] && i*i+j*j<=xreg.radii[2]*xreg.radii[2]){
+                res.skyPix.push(im.raw.data[(c.y+j)*im.raw.width+(c.x+i)]);
+            }if(i*i+j*j<=xreg.radii[0]*xreg.radii[0]){
+                res.starSum += im.raw.data[(c.y+j)*im.raw.width+(c.x+i)];
+                res.starNb++;
             }
         }
-    }if(xreg.radii===2){
-        PhotometryPlugin.regions.push(xreg.id);
     }
-};
+    res.skyMed = PhotometryPlugin.median(res.skyPix);
+    res.skyVal = res.skyMed * res.starNb;
+    PhotometryPlugin.photometry[xreg.id] = res;
+}
+
+PhotometryPlugin.median = function(values) {
+    values.sort(function(a,b) {return a - b;} );
+    var half = Math.floor(values.length/2);
+    if(values.length % 2){
+        return values[half];
+    }else{
+        return (values[half-1] + values[half]) / 2.0;
+    }
+}
 
 //Register the plugin in JS9
 JS9.RegisterPlugin(PhotometryPlugin.CLASS, PhotometryPlugin.NAME, PhotometryPlugin.init,
