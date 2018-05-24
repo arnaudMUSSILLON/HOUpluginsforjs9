@@ -68,10 +68,21 @@ PlotProfile.onPluginDisplay = function (){
 };
 
 //function to call when image change
-PlotProfile.onImageDisplay = function(){
+PlotProfile.onImageDisplay = function(im){
     'use strict';
+    if(im===PlotProfile.lastImage){
+        return;
+    }
+    PlotProfile.lastImage = im;
     PlotProfile.shapeLayer = JS9.NewShapeLayer("PlotProfileShapeLayer");
     PlotProfile.addAllRegions();
+};
+
+//function to call when image is closed
+PlotProfile.onImageClose = function(){
+    'use strict';
+    PlotProfile.addAllRegions();
+    PlotProfile.lastImage = undefined;
 };
 
 //function to call when checkbox autoColor change value
@@ -374,6 +385,7 @@ JS9.RegisterPlugin(PlotProfile.CLASS, PlotProfile.NAME, PlotProfile.init,
             onregionschange: PlotProfile.regionChange,
             onplugindisplay: PlotProfile.onPluginDisplay,
             onimagedisplay: PlotProfile.onImageDisplay,
+            onimageclose: PlotProfile.onImageClose,
             winTitle: "Plot Profile",
             winResize: true,
             winDims: [PlotProfile.WIDTH, PlotProfile.HEIGHT]});

@@ -20,12 +20,16 @@ ContrastPlugin.init = function(){
 };
 
 //Print an instruction message
-ContrastPlugin.printDiv = function(){
+ContrastPlugin.printDiv = function(message){
     'use strict';
     var im, imMin, imMax, scale, head;
+    $(ContrastPlugin.div).empty();
+    if(message!==undefined){
+        $(ContrastPlugin.div).append("<p>"+message+"</p>");
+        return;
+    }
     scale = JS9.GetScale();
     im = JS9.GetImage();
-    $(ContrastPlugin.div).empty();
     if(im===null){
         $(ContrastPlugin.div).append("<p>Open an image File</p>");
         ContrastPlugin.lastImage = undefined;
@@ -39,7 +43,7 @@ ContrastPlugin.printDiv = function(){
     $(ContrastPlugin.minVal).append(scale.scalemin);
     $(ContrastPlugin.maxVal).append(scale.scalemax);
     head = document.getElementsByTagName('head')[0];
-    $(head).append("<style> .ContrastPluginSlider { width: 98%; } </style>")
+    $(head).append("<style> .ContrastPluginSlider { width: 98%; } </style>");
     ContrastPlugin.slidermin = document.createElement("INPUT");
     ContrastPlugin.slidermin.setAttribute("type","range");
     ContrastPlugin.slidermin.setAttribute("min",imMin);
@@ -108,6 +112,12 @@ ContrastPlugin.onNewImage = function(im){
     }
 };
 
+ContrastPlugin.onImageClose = function(){
+    'use strict';
+    ContrastPlugin.lastImage = undefined;
+    ContrastPlugin.printDiv("Open an image File");
+};
+
 //Register the plugin in JS9
 //console.log(JS9.globalOpts.extendedPlugins)
 JS9.RegisterPlugin(ContrastPlugin.CLASS, ContrastPlugin.NAME, ContrastPlugin.init,
@@ -115,6 +125,7 @@ JS9.RegisterPlugin(ContrastPlugin.CLASS, ContrastPlugin.NAME, ContrastPlugin.ini
             menuItem: "Contrast sliders",
             onplugindisplay: ContrastPlugin.init,
             onimagedisplay: ContrastPlugin.onNewImage,
+            onimageclose: ContrastPlugin.onImageClose,
             winTitle: "Scaling",
             winResize: true,
             winDims: [ContrastPlugin.WIDTH, ContrastPlugin.HEIGHT]});
