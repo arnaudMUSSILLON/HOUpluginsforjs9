@@ -38,7 +38,6 @@ PhotometryPlugin.reinit = function(div){
     PhotometryPlugin.tabDiv = document.createElement("DIV");
     PhotometryPlugin.txtDiv = document.createElement("DIV");
     PhotometryPlugin.sliderDiv = document.createElement("DIV");
-    PhotometryPlugin.createSliderDiv(0,100);
     $(div).empty();
     $(div).append(PhotometryPlugin.tabDiv);
     $(div).append(PhotometryPlugin.txtDiv);
@@ -50,6 +49,9 @@ PhotometryPlugin.reinit = function(div){
 PhotometryPlugin.createSliderDiv = function(min, max, sl1, sl2){
     'use strict';
     $(PhotometryPlugin.sliderDiv).empty();
+    if(min===undefined){
+        return;
+    }
     PhotometryPlugin.slider1 = document.createElement("INPUT");
     PhotometryPlugin.slider1.setAttribute("type","range");
     PhotometryPlugin.slider1.setAttribute("min",min);
@@ -125,7 +127,7 @@ PhotometryPlugin.changeMainRegion = function(xreg){
     'use strict';
     if(xreg===undefined || xreg.shape!== "annulus" || xreg.radii.length!==3){
         PhotometryPlugin.mainRegion = -1;
-        PhotometryPlugin.createSliderDiv(0,100, 50, 50);
+        PhotometryPlugin.createSliderDiv();
     }else{
         PhotometryPlugin.mainRegion = xreg.id;
         PhotometryPlugin.createSliderDiv(0,xreg.radii[2],xreg.radii[0],xreg.radii[1]);
@@ -140,7 +142,7 @@ PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
     if(message===undefined){
         message="Click on the buttons below to begin photometry mesure";
     }if(buttonsTxt===undefined){
-        buttonsTxt=["Auto add region", "Clone annulus region", "New annulus region"];
+        buttonsTxt=["Auto photometry", "New annulus region"];
     }
     $(PhotometryPlugin.txtDiv).empty();
     $(PhotometryPlugin.txtDiv).append("<p>"+message+"</p>");
@@ -170,14 +172,12 @@ PhotometryPlugin.onClickButton = function(button){
         PhotometryPlugin.printInstructionText("An image must be loaded before performing photometry mesures");
         return;
     }
-    PhotometryPlugin.action = button;
-    if(button==="Auto add region"){
+    if(button==="Auto photometry"){
+        PhotometryPlugin.action = button;
         PhotometryPlugin.printInstructionText("Click on a star in the image to mesure photometry",["Cancel"]);
     }if(button==="Cancel"){
         PhotometryPlugin.action = "";
         PhotometryPlugin.printInstructionText();
-    }if(button==="Clone annulus region"){
-        PhotometryPlugin.printInstructionText("Click on an annulus region with 3 circle to clone it",["Cancel"]);
     }if(button==="New annulus region"){
         PhotometryPlugin.action = "";
         JS9.AddRegions("annulus", {radii:[PhotometryPlugin.STAR_RADIUS_MULT, PhotometryPlugin.MIN_SKY_RADIUS_MULT, PhotometryPlugin.MAX_SKY_RADIUS_MULT]});
@@ -187,7 +187,7 @@ PhotometryPlugin.onClickButton = function(button){
 PhotometryPlugin.onClickImage = function(im, ipos){
     'use strict';
     var i, j, nb, val, maxX, maxY, cX, cY, maxVal, hvp, halfValRadius, hvrX, hvrY, a, b;
-    if(PhotometryPlugin.action!=="Auto add region"){
+    if(PhotometryPlugin.action!=="Auto photometry"){
         return;
     }
     PhotometryPlugin.action = "";
@@ -260,11 +260,6 @@ PhotometryPlugin.regionChange = function(im, xreg){
         return;
     }if(mode==="select" && xreg.radii.length===3){
         PhotometryPlugin.changeMainRegion(xreg);
-        if(PhotometryPlugin.action==="Clone annulus region"){
-            JS9.AddRegions("annulus", {radii:xreg.radii});
-            PhotometryPlugin.action = "";
-            PhotometryPlugin.printInstructionText();
-        }
         return;
     }
     if(xreg.radii.length===3){
