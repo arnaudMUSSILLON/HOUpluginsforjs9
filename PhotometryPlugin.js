@@ -21,6 +21,7 @@ PhotometryPlugin.MAX_SKY_RADIUS_MULT = 10;
 PhotometryPlugin.action = "";
 PhotometryPlugin.photometry = [];
 PhotometryPlugin.mainRegion = -1;
+PhotometryPlugin.changeLock = false;
 
 //Initialisation function of the plugin
 PhotometryPlugin.init = function(){
@@ -32,38 +33,45 @@ PhotometryPlugin.init = function(){
 //Common procedure to init and onPluginDisplay
 PhotometryPlugin.reinit = function(div){
     'use strict';
-    var sliderDiv;
     PhotometryPlugin.action = "";
+    PhotometryPlugin.changeLock = false;
     PhotometryPlugin.tabDiv = document.createElement("DIV");
     PhotometryPlugin.txtDiv = document.createElement("DIV");
-    sliderDiv = document.createElement("DIV");
-    PhotometryPlugin.slider1 = document.createElement("INPUT");
-    PhotometryPlugin.slider1.setAttribute("type","range");
-    PhotometryPlugin.slider1.setAttribute("min",0);
-    PhotometryPlugin.slider1.setAttribute("max",100);
-    PhotometryPlugin.slider1.setAttribute("value",50);
-    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
-    PhotometryPlugin.slider1.setAttribute("id","PhotometryPluginSlider1");
-    PhotometryPlugin.slider1.setAttribute("onchange","PhotometryPlugin.onSliderChange()");
-    PhotometryPlugin.slider1.setAttribute("oninput","PhotometryPlugin.onSliderMove()");
-    PhotometryPlugin.slider1.onchange = PhotometryPlugin.onSliderChange;
-    PhotometryPlugin.slider2 = document.createElement("INPUT");
-    PhotometryPlugin.slider2.setAttribute("type","range");
-    PhotometryPlugin.slider2.setAttribute("min",0);
-    PhotometryPlugin.slider2.setAttribute("max",100);
-    PhotometryPlugin.slider2.setAttribute("value",50);
-    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
-    PhotometryPlugin.slider2.setAttribute("id","PhotometryPluginSlider2");
-    PhotometryPlugin.slider2.onChange = PhotometryPlugin.onSliderChange;
-    $(sliderDiv).append(PhotometryPlugin.slider1);
-    $(sliderDiv).append("<br>");
-    $(sliderDiv).append(PhotometryPlugin.slider2);
+    PhotometryPlugin.sliderDiv = document.createElement("DIV");
+    PhotometryPlugin.createSliderDiv(0,100);
     $(div).empty();
     $(div).append(PhotometryPlugin.tabDiv);
     $(div).append(PhotometryPlugin.txtDiv);
-    $(div).append(sliderDiv);
+    $(div).append(PhotometryPlugin.sliderDiv);
     PhotometryPlugin.printInstructionText();
     PhotometryPlugin.printTab();
+};
+
+PhotometryPlugin.createSliderDiv = function(min, max, sl1, sl2){
+    'use strict';
+    $(PhotometryPlugin.sliderDiv).empty();
+    PhotometryPlugin.slider1 = document.createElement("INPUT");
+    PhotometryPlugin.slider1.setAttribute("type","range");
+    PhotometryPlugin.slider1.setAttribute("min",min);
+    PhotometryPlugin.slider1.setAttribute("max",max);
+    PhotometryPlugin.slider1.setAttribute("value",sl1);
+    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
+    PhotometryPlugin.slider1.setAttribute("id","PhotometryPluginSlider1");
+    PhotometryPlugin.slider1.setAttribute("onchange","PhotometryPlugin.onSliderChange(this,0)");
+    PhotometryPlugin.slider1.setAttribute("oninput","PhotometryPlugin.onSliderMove(this,0)");
+    PhotometryPlugin.slider1.onchange = PhotometryPlugin.onSliderChange;
+    PhotometryPlugin.slider2 = document.createElement("INPUT");
+    PhotometryPlugin.slider2.setAttribute("type","range");
+    PhotometryPlugin.slider2.setAttribute("min",min);
+    PhotometryPlugin.slider2.setAttribute("max",max);
+    PhotometryPlugin.slider2.setAttribute("value",sl2);
+    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
+    PhotometryPlugin.slider2.setAttribute("id","PhotometryPluginSlider2");
+    PhotometryPlugin.slider2.setAttribute("onchange","PhotometryPlugin.onSliderChange(this,1)");
+    PhotometryPlugin.slider2.setAttribute("oninput","PhotometryPlugin.onSliderMove(this,1)");
+    $(PhotometryPlugin.sliderDiv).append(PhotometryPlugin.slider1);
+    $(PhotometryPlugin.sliderDiv).append("<br>");
+    $(PhotometryPlugin.sliderDiv).append(PhotometryPlugin.slider2);
 };
 
 //Function to call each time plugin window is open
@@ -73,26 +81,57 @@ PhotometryPlugin.onPluginDisplay = function (){
     PhotometryPlugin.reinit(this.div);
 };
 
-PhotometryPlugin.onSliderMove = function(){
-    console.log("move")
-}
-
-PhotometryPlugin.onSliderChange = function(){
-    /*var regs, xreg;
+PhotometryPlugin.onSliderMove = function(slider,nb){
+    'use strict';
+    var regs, xreg;
+    if(nb===0 && parseInt(slider.value,10)>parseInt(PhotometryPlugin.slider2.value,10)){
+        PhotometryPlugin.slider2.value = slider.value;
+    }if(nb===1 && parseInt(slider.value,10)<parseInt(PhotometryPlugin.slider1.value,10)){
+        PhotometryPlugin.slider1.value = slider.value;
+    }
     if(PhotometryPlugin.mainRegion===-1){
         return;
     }
-    regs = JS9.getRegion(PhotometryPlugin.mainRegion);
-    if(regs===null || regs===undefined || regs.length===0){
+    PhotometryPlugin.changeLock = true;
+    regs = JS9.GetRegions(PhotometryPlugin.mainRegion);
+    if(regs!==null && regs!==undefined && regs.length!==0){
+        xreg = regs[0];
+        if(xreg.radii.length===3){
+            JS9.ChangeRegions(PhotometryPlugin.mainRegion,{radii:[PhotometryPlugin.slider1.value,PhotometryPlugin.slider2.value,xreg.radii[2]]});
+        }
+    }
+    PhotometryPlugin.changeLock = false;
+};
+
+PhotometryPlugin.onSliderChange = function(){
+    'use strict';
+    var regs, xreg, im;
+    
+    if(PhotometryPlugin.mainRegion===-1){
+        return;
+    }
+    regs = JS9.GetRegions(PhotometryPlugin.mainRegion);
+    im = JS9.GetImage();
+    if(regs===null || regs===undefined || im===null || im===undefined){
         return;
     }
     xreg = regs[0];
-    if(this.id==="PhotometryPluginSlider1"){
-        JS9.ChangeRegion(PhotometryPlugin.mainRegion,{radii:});
-    }*/
-    console.log("change")
     
-}
+    PhotometryPlugin.calculatePhotometry(im,xreg);
+    PhotometryPlugin.printTab();
+};
+
+PhotometryPlugin.changeMainRegion = function(xreg){
+    'use strict';
+    if(xreg===undefined || xreg.shape!== "annulus" || xreg.radii.length!==3){
+        PhotometryPlugin.mainRegion = -1;
+        PhotometryPlugin.createSliderDiv(0,100, 50, 50);
+    }else{
+        PhotometryPlugin.mainRegion = xreg.id;
+        PhotometryPlugin.createSliderDiv(0,xreg.radii[2],xreg.radii[0],xreg.radii[1]);
+    }
+    
+};
 
 //Print an instruction message
 PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
@@ -210,15 +249,17 @@ PhotometryPlugin.onClickImage = function(im, ipos){
 PhotometryPlugin.regionChange = function(im, xreg){
     'use strict';
     var mode;
-    if(xreg.shape!=="annulus"){
+    if(PhotometryPlugin.changeLock || xreg.shape!=="annulus"){
         return;
     }
     mode = xreg.mode;
     if(mode==="remove" || xreg.radii.length!==3){
         PhotometryPlugin.photometry[xreg.id]=null;
         PhotometryPlugin.printTab();
+        PhotometryPlugin.changeMainRegion();
         return;
     }if(mode==="select" && xreg.radii.length===3){
+        PhotometryPlugin.changeMainRegion(xreg);
         if(PhotometryPlugin.action==="Clone annulus region"){
             JS9.AddRegions("annulus", {radii:xreg.radii});
             PhotometryPlugin.action = "";
@@ -227,6 +268,7 @@ PhotometryPlugin.regionChange = function(im, xreg){
         return;
     }
     if(xreg.radii.length===3){
+        PhotometryPlugin.changeMainRegion(xreg);
         PhotometryPlugin.calculatePhotometry(im,xreg);
     }
     PhotometryPlugin.printTab();
@@ -235,7 +277,6 @@ PhotometryPlugin.regionChange = function(im, xreg){
 PhotometryPlugin.calculatePhotometry = function(im, xreg){
     'use strict';
     var res = {}, i, j, c = {}, maxRadius=0;
-    var tab = [];
     if(xreg.shape!=="annulus" || xreg.radii.length!==3){
         return;
     }
@@ -254,7 +295,6 @@ PhotometryPlugin.calculatePhotometry = function(im, xreg){
             if(i*i+j*j>=xreg.radii[1]*xreg.radii[1] && i*i+j*j<=xreg.radii[2]*xreg.radii[2]){
                 res.skyPix.push(im.raw.data[(c.y+j)*im.raw.width+(c.x+i)]);
             }if(i*i+j*j<=xreg.radii[0]*xreg.radii[0]){
-                tab.push([i,j]);
                 res.starSum += im.raw.data[(c.y+j)*im.raw.width+(c.x+i)];
                 res.starNb++;
             }
