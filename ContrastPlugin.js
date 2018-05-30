@@ -122,7 +122,6 @@ ContrastPlugin.onImageClose = function(){
 };
 
 //Register the plugin in JS9
-//console.log(JS9.globalOpts.extendedPlugins)
 JS9.RegisterPlugin(ContrastPlugin.CLASS, ContrastPlugin.NAME, ContrastPlugin.init,
             {//menu:"000",
             menuItem: "Contrast sliders",
