@@ -8,12 +8,17 @@ var ContrastPlugin;
 ContrastPlugin = {};
 ContrastPlugin.CLASS = "HandsOnUniverse";
 ContrastPlugin.NAME = "Contrast";
-ContrastPlugin.WIDTH =  600;
-ContrastPlugin.HEIGHT = 200;
+ContrastPlugin.WIDTH =  300;
+ContrastPlugin.HEIGHT = 150;
 
 //Initialisation function of the plugin
 ContrastPlugin.init = function(){
     'use strict';
+    if(ContrastPlugin.first===undefined){
+        ContrastPlugin.first = false;
+        var head = document.getElementsByTagName('head')[0];
+        $(head).append("<style> .ContrastPluginSlider { width: 98%; } </style>");
+    }
     ContrastPlugin.div = this.div;
     ContrastPlugin.printDiv();
     ContrastPlugin.ContrastAndScale();
@@ -22,7 +27,7 @@ ContrastPlugin.init = function(){
 //Print an instruction message
 ContrastPlugin.printDiv = function(message){
     'use strict';
-    var im, imMin, imMax, scale, head;
+    var im, imMin, imMax, scale;
     $(ContrastPlugin.div).empty();
     if(message!==undefined){
         $(ContrastPlugin.div).append("<p>"+message+"</p>");
@@ -42,8 +47,6 @@ ContrastPlugin.printDiv = function(message){
     ContrastPlugin.maxVal = document.createElement("DIV");
     $(ContrastPlugin.minVal).append(scale.scalemin);
     $(ContrastPlugin.maxVal).append(scale.scalemax);
-    head = document.getElementsByTagName('head')[0];
-    $(head).append("<style> .ContrastPluginSlider { width: 98%; } </style>");
     ContrastPlugin.slidermin = document.createElement("INPUT");
     ContrastPlugin.slidermin.setAttribute("type","range");
     ContrastPlugin.slidermin.setAttribute("min",imMin);
@@ -63,7 +66,7 @@ ContrastPlugin.printDiv = function(message){
     $(ContrastPlugin.div).append("Minimum : <br>");
     $(ContrastPlugin.div).append(ContrastPlugin.slidermin);
     $(ContrastPlugin.div).append(ContrastPlugin.minVal);
-    $(ContrastPlugin.div).append("<br><br>Maximum:<br>");
+    $(ContrastPlugin.div).append("<br>Maximum:<br>");
     $(ContrastPlugin.div).append(ContrastPlugin.slidermax);
     $(ContrastPlugin.div).append(ContrastPlugin.maxVal);
 };
