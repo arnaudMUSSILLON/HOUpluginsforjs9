@@ -8,7 +8,7 @@ var PhotometryPlugin;
 PhotometryPlugin = {};
 PhotometryPlugin.CLASS = "HandsOnUniverse";
 PhotometryPlugin.NAME = "Photometry";
-PhotometryPlugin.WIDTH =  600;
+PhotometryPlugin.WIDTH =  650;
 PhotometryPlugin.HEIGHT = 400;
 
 //constants used by plugin
@@ -26,6 +26,8 @@ PhotometryPlugin.changeLock = false;
 //Initialisation function of the plugin
 PhotometryPlugin.init = function(){
     'use strict';
+    var head = document.getElementsByTagName('head')[0];
+    $(head).append("<style> .PhotometryPluginSlider { width: 98%; } </style>");
     PhotometryPlugin.photometry = [];
     PhotometryPlugin.reinit(this.div);
 };
@@ -57,7 +59,8 @@ PhotometryPlugin.createSliderDiv = function(min, max, sl1, sl2){
     PhotometryPlugin.slider1.setAttribute("min",min);
     PhotometryPlugin.slider1.setAttribute("max",max);
     PhotometryPlugin.slider1.setAttribute("value",sl1);
-    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
+    PhotometryPlugin.slider1.setAttribute("step","0.1");
+    PhotometryPlugin.slider1.setAttribute("class","PhotometryPluginSlider");
     PhotometryPlugin.slider1.setAttribute("id","PhotometryPluginSlider1");
     PhotometryPlugin.slider1.setAttribute("onchange","PhotometryPlugin.onSliderChange(this,0)");
     PhotometryPlugin.slider1.setAttribute("oninput","PhotometryPlugin.onSliderMove(this,0)");
@@ -67,7 +70,8 @@ PhotometryPlugin.createSliderDiv = function(min, max, sl1, sl2){
     PhotometryPlugin.slider2.setAttribute("min",min);
     PhotometryPlugin.slider2.setAttribute("max",max);
     PhotometryPlugin.slider2.setAttribute("value",sl2);
-    //PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
+    PhotometryPlugin.slider2.setAttribute("step","0.1");
+    PhotometryPlugin.slider2.setAttribute("class","PhotometryPluginSlider");
     PhotometryPlugin.slider2.setAttribute("id","PhotometryPluginSlider2");
     PhotometryPlugin.slider2.setAttribute("onchange","PhotometryPlugin.onSliderChange(this,1)");
     PhotometryPlugin.slider2.setAttribute("oninput","PhotometryPlugin.onSliderMove(this,1)");
@@ -142,7 +146,7 @@ PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
     if(message===undefined){
         message="Click on the buttons below to begin photometry mesure";
     }if(buttonsTxt===undefined){
-        buttonsTxt=["Auto photometry", "New annulus region"];
+        buttonsTxt=["Auto photometry", "New annulus region", "Use annulus region"];
     }
     $(PhotometryPlugin.txtDiv).empty();
     $(PhotometryPlugin.txtDiv).append("<p>"+message+"</p>");
@@ -153,13 +157,14 @@ PhotometryPlugin.printInstructionText = function(message, buttonsTxt){
 
 PhotometryPlugin.printTab = function(){
     'use strict';
-    var i, table, rphoto;
+    var i, table, rphoto, td;
+    td = "<td align='center'>";
     table = document.createElement("TABLE");
-    $(table).append("<tr><th>Star Value</th><th>Sky Value</th><th>Sky Median</th><th>Number of pixels</th><tr>");
+    $(table).append("<tr><th>Star Value</th><th>Sky Value</th><th>Sky Median</th><th>Number of pixels</th><th>RMS</th><tr>");
     for(i=0;i<PhotometryPlugin.photometry.length;i++){
         rphoto = PhotometryPlugin.photometry[i];
         if(rphoto!==null && rphoto!==undefined){
-            $(table).append("<tr><td>"+rphoto.starSum+"</td><td>"+rphoto.skyVal+"</td><td>"+rphoto.skyMed+"</td><td>"+rphoto.starNb+"</td>");
+            $(table).append("<tr>"+td+rphoto.starSum+"</td>"+td+rphoto.skyVal+"</td>"+td+rphoto.skyMed+"</td>"+td+rphoto.starNb+"</td>"+td+rphoto.rms+"</td></tr>");
         }
     }
     $(PhotometryPlugin.tabDiv).empty();
@@ -181,6 +186,9 @@ PhotometryPlugin.onClickButton = function(button){
     }if(button==="New annulus region"){
         PhotometryPlugin.action = "";
         JS9.AddRegions("annulus", {radii:[PhotometryPlugin.STAR_RADIUS_MULT, PhotometryPlugin.MIN_SKY_RADIUS_MULT, PhotometryPlugin.MAX_SKY_RADIUS_MULT]});
+    }if(button==="Use annulus region"){
+        PhotometryPlugin.action = button;
+        PhotometryPlugin.printInstructionText("Click on a annulus region with 3 circles to use it",["Cancel"]);
     }
 };
 
@@ -260,7 +268,12 @@ PhotometryPlugin.regionChange = function(im, xreg){
         return;
     }if(mode==="select" && xreg.radii.length===3){
         PhotometryPlugin.changeMainRegion(xreg);
-        return;
+        if(PhotometryPlugin.action!=="Use annulus region"){
+            return;
+        }else{
+            PhotometryPlugin.action = "";
+            PhotometryPlugin.printInstructionText();
+        }
     }
     if(xreg.radii.length===3){
         PhotometryPlugin.changeMainRegion(xreg);
@@ -296,6 +309,12 @@ PhotometryPlugin.calculatePhotometry = function(im, xreg){
         }
     }
     res.skyMed = PhotometryPlugin.median(res.skyPix);
+    res.rms = 0;
+    for(i=0;i<res.skyPix.length;i++){
+        //tab.push()
+        res.rms += (res.skyPix[i] - res.skyMed)*(res.skyPix[i] - res.skyMed);
+    }
+    res.rms = Math.sqrt(res.rms/res.skyPix.length);
     res.skyVal = res.skyMed * res.starNb;
     PhotometryPlugin.photometry[xreg.id] = res;
 };
@@ -311,6 +330,14 @@ PhotometryPlugin.median = function(values) {
     }
 };
 
+PhotometryPlugin.clearTab = function(){
+    'use strict';
+    PhotometryPlugin.photometry = [];
+    PhotometryPlugin.printTab();
+    PhotometryPlugin.printInstructionText();
+    PhotometryPlugin.action = "";
+};
+
 //Register the plugin in JS9
 JS9.RegisterPlugin(PhotometryPlugin.CLASS, PhotometryPlugin.NAME, PhotometryPlugin.init,
             {menu:"analysis",
@@ -318,7 +345,8 @@ JS9.RegisterPlugin(PhotometryPlugin.CLASS, PhotometryPlugin.NAME, PhotometryPlug
             onregionschange: PhotometryPlugin.regionChange,
             onplugindisplay: PhotometryPlugin.onPluginDisplay,
             onclick: PhotometryPlugin.onClickImage,
-            /*onimagedisplay: PlotProfile.onImageDisplay,*/
+            onimagedisplay: PhotometryPlugin.clearTab,
+            onimageclose: PhotometryPlugin.clearTab,
             winTitle: "Plot Profile",
             winResize: true,
             winDims: [PhotometryPlugin.WIDTH, PhotometryPlugin.HEIGHT]});
