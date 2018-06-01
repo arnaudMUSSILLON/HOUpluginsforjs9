@@ -16,6 +16,7 @@ Plugins
 
 Contrast : Change the contrast of image using two sliders  
 Plot profile : Draw the plot profile of any line region in the image  
+Photometry : Perform photonetry measures on stars
 
 
 Examples
