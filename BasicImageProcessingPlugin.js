@@ -11,30 +11,27 @@ BasicImProcPlugin.SubImage = {};
 BasicImProcPlugin.CLASS = "HandsOnUniverse";
 BasicImProcPlugin.NAME = "BasicImProc";
 BasicImProcPlugin.WIDTH =  250;
-BasicImProcPlugin.HEIGHT = 105;
+BasicImProcPlugin.HEIGHT = 200;
+
+BasicImProcPlugin.SubImage.HALFANGLE = 179.83806486399;
 
 //Initialisation function of the plugin
 BasicImProcPlugin.init = function(){
     'use strict';
-    var divAddSubstract, divSubImage;
-    /*$(this.div).empty();
-    BasicImProcPlugin.AddSubstract.listDiv = document.createElement("DIV");
-    $(this.div).append(BasicImProcPlugin.AddSubstract.listDiv);
-    $(this.div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(1)'>Add</button>");
-    $(this.div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(-1)'>Substract</button>");
-    BasicImProcPlugin.AddSubstract.createLists();*/
     $(this.div).empty();
-    divSubImage = document.createElement("DIV");
-    divAddSubstract = document.createElement("DIV");
-    $(this.div).append(divSubImage);
-    $(this.div).append(divAddSubstract);
-    BasicImProcPlugin.AddSubstract.init(divAddSubstract);
+    BasicImProcPlugin.SubImage.div = document.createElement("DIV");
+    BasicImProcPlugin.AddSubstract.div = document.createElement("DIV");
+    $(this.div).append(BasicImProcPlugin.SubImage.div);
+    $(this.div).append(BasicImProcPlugin.AddSubstract.div);
+    BasicImProcPlugin.AddSubstract.init();
+    BasicImProcPlugin.SubImage.init();
 };
 
-BasicImProcPlugin.AddSubstract.init = function(div){
+BasicImProcPlugin.AddSubstract.init = function(){
     'use strict';
+    var div = BasicImProcPlugin.AddSubstract.div;
     $(div).empty();
-    $(div).append("Add/Substract two images");
+    $(div).append("<b>Add/Substract two images</b>");
     BasicImProcPlugin.AddSubstract.listDiv = document.createElement("DIV");
     $(div).append(BasicImProcPlugin.AddSubstract.listDiv);
     $(div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(1)'>Add</button>");
@@ -129,11 +126,86 @@ BasicImProcPlugin.AddSubstract.calculateBitPix = function(min, max, bitpix){
     }
 };
 
+
+BasicImProcPlugin.SubImage.init = function(){
+    'use strict';
+    BasicImProcPlugin.SubImage.mainregion = -1;
+    BasicImProcPlugin.SubImage.printDiv();
+};
+
+BasicImProcPlugin.SubImage.printDiv = function(err){
+    'use strict';
+    var div = BasicImProcPlugin.SubImage.div;
+    $(div).empty();
+    $(div).append("<b>create sub image<br></b>");
+    if(err==="badangle"){
+        $(div).append("Box region should have a angle of 0<br>");
+        $(div).append("<button onclick='BasicImProcPlugin.SubImage.resetAngle()'>reset angle</button>");
+        return;
+    }
+    if(BasicImProcPlugin.SubImage.mainregion===-1 || err==="noregion"){
+        $(div).append("Create or select a box region to create a sub image");
+        return;
+    }
+    $(div).append("<button type='file' onclick='BasicImProcPlugin.SubImage.onClickButton()'>Create sub-image</button>");
+};
+
+BasicImProcPlugin.SubImage.onClickButton = function(){
+    'use strict';
+    var i, j, regs, xreg, im, xmin, ymin, xmax, ymax, newImage = {};
+    regs = JS9.GetRegions(BasicImProcPlugin.SubImage.mainregion);
+    im = JS9.GetImage();
+    if(regs===null || regs===undefined || regs.length!==1 || im===null || im===undefined){
+        return;
+    }
+    newImage.naxis = 2;
+    newImage.image = [];
+    xreg = regs[0];
+    xmin = Math.floor(xreg.x-xreg.width/2);
+    xmax = Math.floor(xreg.x+xreg.width/2);
+    ymin = Math.floor(xreg.y-xreg.height/2);
+    ymax = Math.floor(xreg.y+xreg.height/2);
+    for(j=ymin;j<=ymax;j++){
+        for(i=xmin;i<=xmax;i++){
+            newImage.image.push(im.raw.data[j * im.raw.width + i]);
+        }
+    }
+    newImage.naxis1 = xmax-xmin+1;
+    newImage.naxis2 = ymax-ymin+1;
+    newImage.bitpix = im.raw.bitpix;
+    JS9.Load(newImage);
+};
+
+BasicImProcPlugin.SubImage.resetAngle = function(){
+    'use strict';
+    JS9.ChangeRegions(BasicImProcPlugin.SubImage.mainregion,{angle: 0});
+};
+
+BasicImProcPlugin.SubImage.regionchange = function(im,xreg){
+    'use strict';
+    var err;
+    if(xreg.shape!=="box"){
+        BasicImProcPlugin.SubImage.mainregion = -1;
+    }else{
+        BasicImProcPlugin.SubImage.mainregion = xreg.id;
+        if(xreg.angle!==0 && xreg.angle!==BasicImProcPlugin.SubImage.HALFANGLE){
+            err = "badangle";
+        }
+        if(xreg.mode==="remove"){
+            err = "noregion";
+            BasicImProcPlugin.SubImage.mainregion = -1;
+        }
+        BasicImProcPlugin.SubImage.printDiv(err);
+    }
+};
+
+
 //Register the plugin in JS9
 JS9.RegisterPlugin(BasicImProcPlugin.CLASS, BasicImProcPlugin.NAME, BasicImProcPlugin.init,
             {menuItem: "Basic Image Processing",
             onplugindisplay: BasicImProcPlugin.init,
             onimageload: BasicImProcPlugin.init,
-            winTitle: "Scaling",
+            onregionschange: BasicImProcPlugin.SubImage.regionchange,
+            winTitle: "Basic Image Processing",
             winResize: true,
             winDims: [BasicImProcPlugin.WIDTH, BasicImProcPlugin.HEIGHT]});
