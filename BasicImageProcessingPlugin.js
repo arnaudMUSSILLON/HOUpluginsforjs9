@@ -27,7 +27,7 @@ BasicImProcPlugin.init = function(){
     BasicImProcPlugin.SubImage.init();
 };
 
-BasicImProcPlugin.AddSubstract.init = function(){
+BasicImProcPlugin.AddSubstract.init = function(excludeImage){
     'use strict';
     var div = BasicImProcPlugin.AddSubstract.div;
     $(div).empty();
@@ -36,10 +36,10 @@ BasicImProcPlugin.AddSubstract.init = function(){
     $(div).append(BasicImProcPlugin.AddSubstract.listDiv);
     $(div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(1)'>Add</button>");
     $(div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(-1)'>Substract</button>");
-    BasicImProcPlugin.AddSubstract.createLists();
+    BasicImProcPlugin.AddSubstract.createLists(excludeImage);
 };
 
-BasicImProcPlugin.AddSubstract.createLists = function(){
+BasicImProcPlugin.AddSubstract.createLists = function(excludeImage){
     'use strict';
     var images, i, str;
     images = JS9.GetDisplayData();
@@ -49,11 +49,13 @@ BasicImProcPlugin.AddSubstract.createLists = function(){
     $(BasicImProcPlugin.AddSubstract.list2).append("<option value=''>Chose an image</option>");
     for(i=0;i<images.length;i++){
         str = images[i].id;
-        if(str.length>30){
-            str = str.slice(0,30)+"...";
+        if(str!==excludeImage){
+            if(str.length>30){
+                str = str.slice(0,30)+"...";
+            }
+            $(BasicImProcPlugin.AddSubstract.list1).append("<option value='"+images[i].id+"'>"+str+"</option>");
+            $(BasicImProcPlugin.AddSubstract.list2).append("<option value='"+images[i].id+"'>"+str+"</option>");
         }
-        $(BasicImProcPlugin.AddSubstract.list1).append("<option value='"+images[i].id+"'>"+str+"</option>");
-        $(BasicImProcPlugin.AddSubstract.list2).append("<option value='"+images[i].id+"'>"+str+"</option>");
     }
     $(BasicImProcPlugin.AddSubstract.listDiv).empty();
     $(BasicImProcPlugin.AddSubstract.listDiv).append("image 1:");
@@ -199,13 +201,31 @@ BasicImProcPlugin.SubImage.regionchange = function(im,xreg){
     }
 };
 
+BasicImProcPlugin.onRegionChange = function(im,xreg){
+    'use strict';
+    BasicImProcPlugin.SubImage.regionchange(im,xreg);
+};
+
+BasicImProcPlugin.onImageLoad = function(){
+    'use strict';
+    BasicImProcPlugin.AddSubstract.init();
+    BasicImProcPlugin.SubImage.init();
+};
+
+BasicImProcPlugin.onImageClose = function(im){
+    'use strict';
+    BasicImProcPlugin.AddSubstract.init(im.id);
+    BasicImProcPlugin.SubImage.init();
+};
+
 
 //Register the plugin in JS9
 JS9.RegisterPlugin(BasicImProcPlugin.CLASS, BasicImProcPlugin.NAME, BasicImProcPlugin.init,
             {menuItem: "Basic Image Processing",
             onplugindisplay: BasicImProcPlugin.init,
-            onimageload: BasicImProcPlugin.init,
-            onregionschange: BasicImProcPlugin.SubImage.regionchange,
+            onimageload: BasicImProcPlugin.onImageLoad,
+            onimageclose: BasicImProcPlugin.onImageClose,
+            onregionschange: BasicImProcPlugin.onRegionChange,
             winTitle: "Basic Image Processing",
             winResize: true,
             winDims: [BasicImProcPlugin.WIDTH, BasicImProcPlugin.HEIGHT]});
