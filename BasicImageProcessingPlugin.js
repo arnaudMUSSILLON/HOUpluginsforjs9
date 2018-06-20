@@ -14,6 +14,7 @@ BasicImProcPlugin.WIDTH =  250;
 BasicImProcPlugin.HEIGHT = 200;
 
 BasicImProcPlugin.SubImage.HALFANGLE = 179.83806486399;
+BasicImProcPlugin.SubImage.zeroAngle = 0;
 
 //Initialisation function of the plugin
 BasicImProcPlugin.init = function(){
@@ -175,12 +176,69 @@ BasicImProcPlugin.SubImage.onClickButton = function(){
     newImage.naxis1 = xmax-xmin+1;
     newImage.naxis2 = ymax-ymin+1;
     newImage.bitpix = im.raw.bitpix;
+    newImage.head = BasicImProcPlugin.SubImage.copyWCSFromHeader(im.raw.header, xmin, ymin);
+    newImage.head.SIMPLE = true;
+    newImage.head.BITPIX = newImage.bitpix;
+    newImage.head.NAXIS1 = newImage.naxis1;
+    newImage.head.NAXIS2 = newImage.naxis2;
+    newImage.head.NAXIS = newImage.naxis;
     JS9.Load(newImage);
+};
+
+
+//http://www.astro.cornell.edu/~vassilis/isocont/node17.html
+BasicImProcPlugin.SubImage.copyWCSFromHeader = function(header, dx, dy){
+    'use strict';
+    var res = {};
+    if(header.CTYPE1!==undefined){
+        res.CTYPE1 = header.CTYPE1;
+    }if(header.CTYPE2!==undefined){
+        res.CTYPE2 = header.CTYPE2;
+    }if(header.CRVAL1!==undefined){
+        res.CRVAL1 = header.CRVAL1;
+    }if(header.CRVAL2!==undefined){
+        res.CRVAL2 = header.CRVAL2;
+    }if(header.CRPIX1!==undefined){
+        res.CRPIX1 = header.CRPIX1 - dx;
+    }if(header.CRPIX2!==undefined){
+        res.CRPIX2 = header.CRPIX2 - dy;
+    }if(header.EQUINOX!==undefined){
+        res.EQUINOX = header.EQUINOX;
+    }if(header.CDELT1!==undefined){
+        res.CDELT1 = header.CDELT1;
+    }if(header.CDELT2!==undefined){
+        res.CDELT2 = header.CDELT2;
+    }if(header.CROTA2!==undefined){
+        res.CROTA2 = header.CROTA2;
+    }if(header.CD001001!==undefined){
+        res.CD001001 = header.CD001001;
+    }if(header.CD001002!==undefined){
+        res.CD001002 = header.CD001002;
+    }if(header.CD002001!==undefined){
+        res.CD002001 = header.CD002001;
+    }if(header.CD002002!==undefined){
+        res.CD002002 = header.CD002002;
+    }if(header.CDELT1!==undefined){
+        res.CDELT1 = header.CDELT1;
+    }if(header.CDELT2!==undefined){
+        res.CDELT2 = header.CDELT2;
+    }if(header.CD1_1!==undefined){
+        res.CD1_1 = header.CD1_1;
+    }if(header.CD1_2!==undefined){
+        res.CD1_2 = header.CD1_2;
+    }if(header.CD2_1!==undefined){
+        res.CD2_1 = header.CD2_1;
+    }if(header.CD2_2!==undefined){
+        res.CD2_2 = header.CD2_2;
+    }
+    return res;
 };
 
 BasicImProcPlugin.SubImage.resetAngle = function(){
     'use strict';
     JS9.ChangeRegions(BasicImProcPlugin.SubImage.mainregion,{angle: 0});
+    BasicImProcPlugin.SubImage.zeroAngle = JS9.GetRegions(BasicImProcPlugin.SubImage.mainregion)[0].angle;
+    BasicImProcPlugin.SubImage.printDiv();
 };
 
 BasicImProcPlugin.SubImage.regionchange = function(im,xreg){
@@ -190,7 +248,7 @@ BasicImProcPlugin.SubImage.regionchange = function(im,xreg){
         BasicImProcPlugin.SubImage.mainregion = -1;
     }else{
         BasicImProcPlugin.SubImage.mainregion = xreg.id;
-        if(xreg.angle!==0 && xreg.angle!==BasicImProcPlugin.SubImage.HALFANGLE){
+        if(xreg.angle!==0 && xreg.angle!==BasicImProcPlugin.SubImage.zeroAngle){
             err = "badangle";
         }
         if(xreg.mode==="remove"){
