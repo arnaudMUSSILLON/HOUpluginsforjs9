@@ -12,19 +12,24 @@
       <script type="text/javascript" src="PlotProfilePlugin.js"></script>
       <script type="text/javascript" src="ContrastPlugin.js"></script>
       <script type="text/javascript" src="PhotometryPlugin.js"></script>
+      <script type="text/javascript" src="BasicImageProcessingPlugin.js"></script>
 </head>
 <body>
     <p>This is a demo website for JS9 plugins. Access to official JS9 Website <a target="_blank" href="https://js9.si.edu/">here</a></p>
-    <p>Plot profile Plugin : Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Plot Profile&quot;. You can now see plot profile of any line region you add<br>
+    Plot profile Plugin : Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Plot Profile&quot;. You can now see plot profile of any line region you add<br>
     Contrast Plugin : Open an image file, then go to &quot;View&quot; menu, and click on &quot;Contrast sliders&quot;. You can now adjust contrast by moving the two sliders<br>
-    Photometry Plugin : Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Photometry&quot;. You can use 3 circles annulus regions tu calculate photometry. Pixel inside the smallest circle must be star pixel. Pixel between the two largest circles will be sky pixel</p>
+    Photometry Plugin : Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Photometry&quot;. You can use 3 circles annulus regions tu calculate photometry. Pixel inside the smallest circle must be star pixel. Pixel between the two largest circles will be sky pixel<br>
+    Basic Image processing : Open an image file, then go to &quot;View&quot; menu, and click on &quot;Basic Image processing&quot;
+    <li>Draw a box region, then click on "Extract Sub image" to create a new FITS image containing only the content of the box region</li>
+    <li>Open two same size images, select them on the two dropdown lists, and click on add of subtract. A third image which is the addition/subtraction of the two first will be created</li>
     <div class="JS9Menubar"></div>
     <div class="JS9Toolbar"></div>
     <div class="JS9"></div>
     <div class="JS9Colorbar"></div>
     <p><a href="HandsOnUniverse/PlotProfile.html">Web page with static plot profile division</a><br>
     <a href="HandsOnUniverse/Photometry.html">Web page with static photometry division</a><br>
-    <a href="HandsOnUniverse/Contrast.html">Web page with static contrast slider division</a></p>
+    <a href="HandsOnUniverse/Contrast.html">Web page with static contrast slider division</a><br>
+    <a href="HandsOnUniverse/BasicImageProcessing.html">Web page with static basic image processing division</a></p>
     <p>
         <a href="https://github.com/ericmandel/js9">JS9 on github</a> by Eric Mandel<br>
         <a href="https://github.com/TBugnot/HOUpluginsforjs9">Plugins on github</a>    

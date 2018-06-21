@@ -15,7 +15,6 @@
       <script type="text/javascript" src="../BasicImageProcessingPlugin.js"></script>
 </head>
 <body>
-    <p>This is a demo website for JS9 plot profile Plugin. Access to official JS9 Website <a target="_blank" href="https://js9.si.edu/">here</a></p>
     <table cellspacing="30">
         <tr valign="top">
         <td>
@@ -25,11 +24,13 @@
             <div class="JS9Colorbar"></div>
         </td>
         <td>
-            <p>Open an image file. You can use 3 circles annulus regions tu calculate photometry. Pixel inside the smallest circle must be star pixel. Pixel between the two largest circles will be sky pixel</p>
-            <div class="HandsOnUniversePhotometry" data-js9id="JS9"></div>
+            Open an image file, then go to &quot;View&quot; menu, and click on &quot;Basic Image processing&quot;
+            <ul>
+                <li>Draw a box region, then click on "Extract Sub image" to create a new FITS image containing only the content of the box region</li>
+                <li>Open two same size images, select them on the two dropdown lists, and click on add of subtract. A third image which is the addition/subtraction of the two first will be created</li>
+            </ul>
+            <div class="HandsOnUniverseBasicImProc" data-js9id="JS9"></div>
         </td>
         </tr>
     </table>
-    <a href="https://github.com/ericmandel/js9">JS9 on github</a> by Eric Mandel<br>
-    <a href="https://github.com/TBugnot/HOUpluginsforjs9">Plot Profile pluggin on github</a>    
 </body>

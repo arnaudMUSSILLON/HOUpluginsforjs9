@@ -160,7 +160,7 @@ PhotometryPlugin.printTab = function(){
     var i, table, rphoto, td;
     td = "<td align='center'>";
     table = document.createElement("TABLE");
-    $(table).append("<tr><th>Star Value</th><th>Sky Value</th><th>Sky Median</th><th>Number of pixels</th><th>RMS</th><tr>");
+    $(table).append("<tr><th>Star Brightness</th><th>Sky Brightness</th><th>Sky Median</th><th>Number of pixels</th><th>RMS</th><tr>");
     for(i=0;i<PhotometryPlugin.photometry.length;i++){
         rphoto = PhotometryPlugin.photometry[i];
         if(rphoto!==null && rphoto!==undefined){
