@@ -1,0 +1,104 @@
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
+    <link type="image/x-icon" rel="shortcut icon" href="js9/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="js9/js9support.css">
+    <link type="text/css" rel="stylesheet" href="js9/js9.css">
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/all.min.css">  <!-- FontAwesome -->
+    <link type="text/css" rel="stylesheet" href="css/jPushMenu.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <!-- =================== Home =================== -->
+    <div class="main-nav">
+        <div class="title-left">
+            <h1 id="title-JS9">JS9</h1>
+            <span id="subtitle-JS9">made in Berkeley</span>
+        </div>
+        <div class="menu-button toggle-menu menu-right push-body">
+            <button><i class="fas fa-bars"></i></button>
+        </div>
+    </div> 
+    <!-- =================== End Home =================== -->
+
+    <!-- =================== Menu =================== -->
+    <nav id="main-navigation" class="nav-menu nav-menu-vertical nav-menu-right">
+        <ul class="list-inline">
+            <li class="current"><a href="#">Home</a></li>
+            <li><a href="PlotProfile.html">Plot profile plugin</a></li>
+            <li><a href="Photometry.html">Photometry plugin</a></li>
+            <li><a href="Contrast.html">Contrast plugin</a></li>
+            <li><a href="BasicImageProcessing.html">Basic image processing</a></li>
+            <li><a href="tips.html">JS9 tips</a></li>
+        </ul>
+    </nav>
+    <!-- =================== End Menu =================== -->
+ 
+    <!-- =================== JS9 =================== -->
+    <section id="JS9-canvas">
+        <div class="JS9Menubar"></div>
+        <div class="JS9Toolbar"></div>
+        <div class="JS9"></div>
+        <div class="JS9Colorbar"></div>
+        <p>This is a demo website for JS9 plugins. Access to official JS9 Website <a target="_blank" href="https://js9.si.edu/">here</a>.</p>
+    </section>
+    <!-- =================== End JS9 =================== -->
+
+    <div class="container" id="plugins-container">
+        <h2>Plugins</h2>
+        <section id="plot-profile">
+            <div class="container plugin-container">
+                <p><b>Plot profile Plugin :</b> Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Plot Profile&quot;. You can now see plot profile of any line region you add</p>
+                <a href="PlotProfile.html">Access the plugin</a>
+            </div>
+        </section>
+
+        <section id="contrast">
+            <div class="container plugin-container">
+                <p><b>Contrast Plugin :</b> Open an image file, then go to &quot;View&quot; menu, and click on &quot;Contrast sliders&quot;. You can now adjust contrast by moving the two sliders<br></p>
+                <a href="Contrast.html">Access the plugin</a>
+            </div>
+        </section>
+
+        <section id="photometry">
+            <div class="container plugin-container">
+                <p><b>Photometry Plugin :</b> Open an image file, then go to menu &quot;Analysis&quot;, and click on &quot;Photometry&quot;. You can use 3 circles annulus regions tu calculate photometry. Pixel inside the smallest circle must be star pixel. Pixel between the two largest circles will be sky pixel<br></p>
+                <a href="Photometry.html">Access the plugin</a>
+            </div>
+        </section>
+
+        <section id="processing">
+            <div class="container plugin-container">
+                <p><b>Basic Image processing :</b> Open an image file, then go to &quot;View&quot; menu, and click on &quot;Basic Image processing&quot;</p>
+                <p>Draw a box region, then click on "Extract Sub image" to create a new FITS image containing only the content of the box region</p>
+                <p>Open two same size images, select them on the two dropdown lists, and click on add of subtract. A third image which is the addition / subtraction of the two first will be created</p>
+                <a href="BasicImageProcessing.html">Access the plugin</a>
+            </div>
+        </section>
+
+        <a target="_blank" href="tips.html">See somes other JS9 tips</a>
+    </div>
+
+    <section id="footer">
+        <div class="container">
+            <p><a href="https://github.com/ericmandel/js9">JS9 on github</a> by Eric Mandel</p>
+            <p><a href="https://github.com/TBugnot/HOUpluginsforjs9">Plugins on github</a></p>
+        </div>
+    </section>
+
+    <!-- Keep scripts at bottom of the document-->
+    <script type="text/javascript" src="libs/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="libs/bootstrap.min.js"></script>
+    <script type="text/javascript" src="libs/jPushMenu.js"></script>
+    <script type="text/javascript" src="libs/app.js"></script>
+    <script type="text/javascript" src="js9/js9prefs.js"></script>
+    <script type="text/javascript" src="js9/js9support.min.js"></script>
+    <script type="text/javascript" src="js9/js9.min.js"></script>
+    <script type="text/javascript" src="js9/js9plugins.js"></script>
+    <script type="text/javascript" src="PlotProfilePlugin.js"></script>
+    <script type="text/javascript" src="ContrastPlugin.js"></script>
+    <script type="text/javascript" src="PhotometryPlugin.js"></script>
+    <script type="text/javascript" src="BasicImageProcessingPlugin.js"></script>
+</body>

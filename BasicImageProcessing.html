@@ -1,4 +1,4 @@
- <head>
+<head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
       <meta name="viewport" content="width=device-width, initial-scale=1" >
@@ -15,8 +15,23 @@
       <script type="text/javascript" src="BasicImageProcessingPlugin.js"></script>
 </head>
 <body>
-    <div class="JS9Menubar"></div>
-    <div class="JS9Toolbar"></div>
-    <div class="JS9"></div>
-    <div class="JS9Colorbar"></div>
+    <table cellspacing="30">
+        <tr valign="top">
+        <td>
+            <div class="JS9Menubar"></div>
+            <div class="JS9Toolbar"></div>
+            <div class="JS9" id="JS9"></div>
+            <div class="JS9Colorbar"></div>
+        </td>
+        <td>
+            <ul>
+                <li>Open an image, draw a box region, then click on &quot;Create sub-image&quot; to create a new FITS image containing only the content of the box region</li>
+                <li>Open two same size images, select them on the two dropdown lists, and click on &quot;add&quot; or &quot;subtract&quot;. A third image which is the addition/subtraction of the two first will be created</li>
+            </ul>
+            <div class="HandsOnUniverseBasicImProc" data-js9id="JS9"></div>
+        </td>
+        </tr>
+    </table>
+    <a href="https://github.com/ericmandel/js9">JS9 on github</a> by Eric Mandel<br>
+    <a href="https://github.com/TBugnot/HOUpluginsforjs9">Plugins on github</a>   
 </body>

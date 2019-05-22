@@ -1,0 +1,156 @@
+/* =================== Typography =================== */
+@import url(http://fonts.googleapis.com/css?family=Montserrat:400,700);
+body{
+	background-color: #fff;
+	font-size: 14px;
+	color: rgb(66,66,66);
+	font-family: 'Montserrat', sans-serif;
+	font-weight: 400;
+}
+::selection{
+	background: rgba(89,111,255,.8);
+	color: #fff;
+}	
+::-moz-selection{
+	background: rgba(89,111,255,.8);
+	color: #fff;
+}	
+ul, ol{
+	margin: 0;
+	padding: 0;
+}
+li{
+	list-style: none;
+}
+ul.list-inline{
+	margin-left: 0;
+}
+h1,h2,h3,h4,h5,h6,p{
+	margin: 0;
+}
+p{
+	font-size: 14px;
+	color: rgb(66,66,66);
+}
+a{
+	color: rgba(89,111,255,.8);
+	-webkit-transition: background .3s, color .3s;
+	transition: background .3s, color .3s;
+}
+a:hover{
+	outline: none;
+	text-decoration: none;
+	color: #000;
+}
+a:focus{
+	outline: none;
+	outline-offset: 0;
+}
+.btn{
+	border-radius: 0;
+}
+.btn:focus{
+	outline: none;
+}
+/* =================== End Typography =================== */
+
+
+/* =================== Menu =================== */
+.main-nav{
+    position: relative;
+	height: 70px;
+	z-index: 999;
+	-webkit-transition: all .5s ease-in-out;
+	transition: all .5s ease-in-out;
+}
+.main-nav-change .title-left,
+.main-nav-change .menu-button{
+	top: 20px !important;
+}
+.main-nav-change{
+	background: rgba(240, 57, 76, 0.95);/* #F0394C*/;
+	height: 80px;
+}
+.title-left{
+    position: relative;
+	top: 10px;
+	left: 50px;
+	z-index: 1;
+	-webkit-transition: top .5s ease-in-out;
+	transition: top .5s ease-in-out;
+}
+#title-JS9 {
+    display: inline;
+}
+#subtitle-JS9 {
+    margin-left: 10px;
+    display: inline;
+    color: rgba(89,111,255,.8);
+}
+.menu-button{
+	position: fixed;
+	left: 93%;
+	text-align: right;
+	top: 15px;
+	z-index: 16;
+	width: 50px;
+	-webkit-transition: top .5s ease-in-out, left .5s;
+	transition: top .5s ease-in-out, left .5s;
+}
+.menu-active {
+  left: 75%;
+}
+.menu-button button {
+  background: rgba(0,0,0,0) none repeat scroll 0 0;
+  border: none;
+  color: rgba(89,111,255,.8);
+  font-size: 30px;
+}
+.menu-button button:focus{
+	outline: none;
+}
+.nav-menu {
+  background: rgb(233,233,233) none repeat scroll 0 0;
+  padding-top: 50px;
+}
+.nav-menu li{
+	display: block;
+	padding:0;
+	margin: 0;
+}
+.nav-menu a {
+  color: rgb(66, 66, 66);
+  border: none;
+  padding: 15px 25px;
+}
+.nav-menu a:hover,
+.nav-menu .current a{
+  color: #fff;
+  background-color: rgba(89,111,255,.8);
+  text-decoration:none;
+}
+/* =================== End Menu =================== */
+
+/* =================== Plugins =================== */
+#plugins-container {
+    margin-top: 50px;
+}
+.plugin-container {
+    margin: 20px 0;
+}
+/* =================== End Plugins =================== */
+
+/* =================== Footer =================== */
+#footer {
+    margin-top: 40px;
+    padding-top: 10px;
+    height: 85px;
+    background-color: rgb(233,233,233);
+    text-align: center;
+    -webkit-box-shadow: inset 0px 10px 6px -1px rgba(0,0,0,0.05);
+    box-shadow: inset 0px 10px 6px -1px rgba(0,0,0,0.05);
+}
+#footer p {
+    margin-top: 5px;
+    margin-right: 20px;
+}
