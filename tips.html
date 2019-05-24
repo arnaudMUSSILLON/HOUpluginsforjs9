@@ -1,15 +1,59 @@
 <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
-      <meta name="viewport" content="width=device-width, initial-scale=1" >
-      <link type="image/x-icon" rel="shortcut icon" href="js9/favicon.ico">
-      <link type="text/css" rel="stylesheet" href="js9/js9support.css">
-      <link type="text/css" rel="stylesheet" href="js9/js9.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" >
+    <meta name="viewport" content="width=device-width, initial-scale=1" >
+    <link type="image/x-icon" rel="shortcut icon" href="js9/favicon.ico">
+    <link type="text/css" rel="stylesheet" href="js9/js9support.css">
+    <link type="text/css" rel="stylesheet" href="js9/js9.css">
+    <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="css/all.min.css">  <!-- FontAwesome -->
+    <link type="text/css" rel="stylesheet" href="css/jPushMenu.css">
+    <link type="text/css" rel="stylesheet" href="css/main.css">
 </head>
 <body>
-  <h1>JS9 TIPS</h1>
-  <h2>Scale z1/z2</h2>
-  <p>Open an image, then click on "Scale->set limits to zscale z1/z2".</p>
-  <h2>RGB images</h2>
-  <p>Open 3 FITS images, corresponding to red, green and blue map. On the "File" menu, select the red image, then click on "Color->red". Then select the green image on the "File" menu, and click on "Color->green". Then select the blue image and click on "Color->blue". Finally click on "color->RGB mode". A vidéo showing how to do is available <a target="_blank" href="https://www.youtube.com/watch?v=7itoFU_NN5c">here</a></p>
+    <!-- =================== Home =================== -->
+    <div class="main-nav">
+        <div class="title-left">
+            <h1 id="title-JS9">JS9</h1>
+            <span id="subtitle-JS9">made in Berkeley</span>
+        </div>
+        <div class="menu-button toggle-menu menu-right push-body">
+            <button><i class="fas fa-bars"></i></button>
+        </div>
+    </div> 
+    <!-- =================== End Home =================== -->
+
+    <!-- =================== Menu =================== -->
+    <nav id="main-navigation" class="nav-menu nav-menu-vertical nav-menu-right">
+        <ul class="list-inline">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="PlotProfile.html">Plot profile plugin</a></li>
+            <li><a href="Photometry.html">Photometry plugin</a></li>
+            <li class="current"><a href="Contrast.html">Contrast plugin</a></li>
+            <li><a href="BasicImageProcessing.html">Basic image processing</a></li>
+            <li><a href="tips.html">JS9 tips</a></li>
+        </ul>
+    </nav>
+    <!-- =================== End Menu =================== -->
+  
+    <div class="container">
+        <h3 class="pt-2" style="text-align: center">Some tips</h3>
+        <h4 class="pt-5">Scale z1/z2</h4>
+        <p class="pt-2">Open an image, then click on "Scale->set limits to zscale z1/z2".</p>
+        <h4 class="pt-4">RGB images</h4>
+        <p class="pt-2">Open 3 FITS images, corresponding to red, green and blue map. On the "File" menu, select the red image, then click on "Color->red". Then select the green image on the "File" menu, and click on "Color->green". Then select the blue image and click on "Color->blue". Finally click on "color->RGB mode". A vidéo showing how to do is available <a target="_blank" href="https://www.youtube.com/watch?v=7itoFU_NN5c">here</a></p>
+    </div>
+
+    <section id="footer">
+        <div class="container">
+            <p><a href="https://github.com/ericmandel/js9">JS9 on github</a> by Eric Mandel</p>
+            <p><a href="https://github.com/TBugnot/HOUpluginsforjs9">Plugins on github</a></p>
+        </div>
+    </section>
+
+    <!-- Keep scripts at bottom of the document-->
+    <script type="text/javascript" src="libs/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="libs/bootstrap.min.js"></script>
+    <script type="text/javascript" src="libs/jPushMenu.js"></script>
+    <script type="text/javascript" src="libs/app.js"></script>   
 </body>

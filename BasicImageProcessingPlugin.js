@@ -32,11 +32,13 @@ BasicImProcPlugin.AddSubstract.init = function(excludeImage){
     'use strict';
     var div = BasicImProcPlugin.AddSubstract.div;
     $(div).empty();
-    $(div).append("<b>Add/Substract two images</b>");
+    $(div).append("<div style='margin-top:20px'><b>Add/Substract two images</b></div>");
     BasicImProcPlugin.AddSubstract.listDiv = document.createElement("DIV");
     $(div).append(BasicImProcPlugin.AddSubstract.listDiv);
-    $(div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(1)'>Add</button>");
-    $(div).append("<button type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(-1)'>Substract</button>");
+    $(div).append("<div style='margin-top:10px;'>");
+    $(div).append("<button class='btn' style='margin: 0 15px;' type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(1)'>Add</button>");
+    $(div).append("<button class='btn' type='file' onclick='BasicImProcPlugin.AddSubstract.onClickButton(-1)'>Substract</button>");
+    $(div).append("</div>");
     BasicImProcPlugin.AddSubstract.createLists(excludeImage);
 };
 
@@ -59,10 +61,10 @@ BasicImProcPlugin.AddSubstract.createLists = function(excludeImage){
         }
     }
     $(BasicImProcPlugin.AddSubstract.listDiv).empty();
-    $(BasicImProcPlugin.AddSubstract.listDiv).append("image 1:");
+    $(BasicImProcPlugin.AddSubstract.listDiv).append("image 1:    ");
     $(BasicImProcPlugin.AddSubstract.listDiv).append(BasicImProcPlugin.AddSubstract.list1);
     $(BasicImProcPlugin.AddSubstract.listDiv).append("<br>");
-    $(BasicImProcPlugin.AddSubstract.listDiv).append("image 2:");
+    $(BasicImProcPlugin.AddSubstract.listDiv).append("image 2:     ");
     $(BasicImProcPlugin.AddSubstract.listDiv).append(BasicImProcPlugin.AddSubstract.list2);
 };
 
@@ -140,7 +142,7 @@ BasicImProcPlugin.SubImage.printDiv = function(err){
     'use strict';
     var div = BasicImProcPlugin.SubImage.div;
     $(div).empty();
-    $(div).append("<b>create sub image<br></b>");
+    $(div).append("<b>Create sub image<br></b>");
     if(err==="badangle"){
         $(div).append("Box region should have a angle of 0<br>");
         $(div).append("<button onclick='BasicImProcPlugin.SubImage.resetAngle()'>reset angle</button>");
