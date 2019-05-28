@@ -35,3 +35,9 @@ if(page !== 'index.html'){
     document.addEventListener('onLoad', resizeJS9());
 }
 // window.addEventListener('resize', () => {location.reload();});       // Reload on resize of window (can't resize JS9 canvas manually)
+
+
+// Download data into csv file 
+function exportToCsv() {
+    
+}

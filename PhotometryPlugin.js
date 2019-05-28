@@ -160,11 +160,12 @@ PhotometryPlugin.printTab = function(){
     var i, table, rphoto, td;
     td = "<td align='center'>";
     table = document.createElement("TABLE");
-    $(table).append("<tr><th>Star Brightness</th><th>Sky Brightness</th><th>Sky Median</th><th>Number of pixels</th><th>RMS</th><tr>");
+    $(table).append("<tr><th>Star Brightness</th><th>Sky Median</th><th>Number of pixels</th><th>RMS</th><tr>");
     for(i=0;i<PhotometryPlugin.photometry.length;i++){
         rphoto = PhotometryPlugin.photometry[i];
         if(rphoto!==null && rphoto!==undefined){
-            $(table).append("<tr>"+td+rphoto.starSum+"</td>"+td+rphoto.skyVal+"</td>"+td+rphoto.skyMed+"</td>"+td+rphoto.starNb+"</td>"+td+rphoto.rms+"</td></tr>");
+            let roundedRMS = Math.round(rphoto.rms * 100) / 100
+            $(table).append("<tr>"+td+rphoto.starSum+"</td>"+td+rphoto.skyMed+"</td>"+td+rphoto.starNb+"</td>"+td+roundedRMS+"</td></tr>");
         }
     }
     $(PhotometryPlugin.tabDiv).empty();
